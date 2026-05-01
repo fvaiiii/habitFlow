@@ -31,15 +31,7 @@ func main() {
 	}
 	defer pool.Close()
 
-	dsn := fmt.Sprintf(
-		"postgres://%s:%s@%s:%d/%s?sslmode=%s",
-		cfg.Postgres.User,
-		cfg.Postgres.Password,
-		cfg.Postgres.Host,
-		cfg.Postgres.Port,
-		cfg.Postgres.DB,
-		cfg.Postgres.SSLMode,
-	)
+	dsn := config.DSNBuilder(&cfg.Postgres)
 
 	dbForMigrations, err := sql.Open("pgx", dsn)
 	if err != nil {

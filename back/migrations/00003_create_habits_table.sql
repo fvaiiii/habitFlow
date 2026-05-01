@@ -1,20 +1,14 @@
 -- +goose Up
--- +goose StatementBegin
 CREATE TABLE habits (
     id SERIAL PRIMARY KEY,
     user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    tag_id INT REFERENCES tags(id) ON DELETE SET NULL,
-    title TEXT NOT NULL,
+    template_id INT REFERENCES habit_templates(id) ON DELETE SET NULL,
+    title VARCHAR(255) NOT NULL,
     description TEXT,
-    frequency TEXT NOT NULL,
-    is_template BOOLEAN DEFAULT FALSE,
-    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT unique_user_habit UNIQUE(user_id, title)
+    frequency VARCHAR(50) NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
--- +goose StatementEnd
 
 -- +goose Down
--- +goose StatementBegin
 DROP TABLE IF EXISTS habits;
--- +goose StatementEnd

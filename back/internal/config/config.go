@@ -42,6 +42,19 @@ type JWTConfig struct {
 	RefreshTTL time.Duration
 }
 
+func DSNBuilder(cfg *PostgresConfig) string {
+	dsn := fmt.Sprintf(
+		"postgres://%s:%s@%s:%d/%s?sslmode=%s",
+		cfg.User,
+		cfg.Password,
+		cfg.Host,
+		cfg.Port,
+		cfg.DB,
+		cfg.SSLMode,
+	)
+
+	return dsn
+}
 func LoadConfig() (*Config, error) {
 	cfg := &Config{
 		ENV: getEnv("ENV", "local"),
