@@ -1,9 +1,9 @@
-package models
+package model
 
 import "time"
 
 type HabitTemplate struct {
-	ID          int       `json:"id" gorm:"primaryKey"`
+	ID          uint      `json:"id"`
 	Title       string    `json:"title"`
 	Description string    `json:"description"`
 	Frequency   string    `json:"frequency"`

@@ -1,11 +1,11 @@
-package models
+package model
 
 import "time"
 
 type Habit struct {
-	ID          int       `json:"id" gorm:"primaryKey"`
-	UserID      int       `json:"user_id"`
-	TemplateID  *int      `json:"template_id"` 
+	ID          uint      `json:"id"`
+	UserID      uint      `json:"user_id"`
+	TemplateID  *uint     `json:"template_id"`
 	Title       string    `json:"title"`
 	Description string    `json:"description"`
 	Frequency   string    `json:"frequency"`

@@ -1,8 +1,8 @@
-package models
+package model
 
 type Tag struct {
-	ID     int    `json:"id" gorm:"primaryKey"`
-	UserID int    `json:"user_id"`
+	ID     uint   `json:"id"`
+	UserID uint   `json:"user_id"`
 	Name   string `json:"name"`
 	Color  string `json:"color"`
 }
