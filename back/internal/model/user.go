@@ -1,9 +1,9 @@
-package models
+package model
 
 import "time"
 
 type User struct {
-	ID           int       `json:"id" gorm:"primaryKey"`
+	ID           uint      `json:"id"`
 	Email        string    `json:"email"`
 	PasswordHash string    `json:"-"`
 	Role         string    `json:"role"`
