@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/fvaiiii/habitFlow/back/internal/api"
 	"github.com/fvaiiii/habitFlow/back/internal/config"
 	"github.com/fvaiiii/habitFlow/back/internal/db"
 	"github.com/fvaiiii/habitFlow/back/pkg/migrator"
-	"github.com/gin-gonic/gin"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/joho/godotenv"
 )
@@ -45,16 +45,11 @@ func main() {
 		log.Fatalf("Failed to run migrations: %v", err)
 	}
 
-	r := gin.Default()
+	srv := api.NewServer(pool)
 
-	r.GET("/health", func(c *gin.Context) {
-		c.JSON(200, gin.H{
-			"status": "ok",
-		})
-	})
 	addr := fmt.Sprintf("%s:%d", cfg.HTTP.Host, cfg.HTTP.Port)
 
-	if err := r.Run(addr); err != nil {
+	if err := srv.Run(addr); err != nil {
 		log.Fatalf("failed to run server: %v", err)
 	}
 
