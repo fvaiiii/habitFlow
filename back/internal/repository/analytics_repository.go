@@ -11,6 +11,8 @@ import (
 
 type AnalyticsRepository interface {
 	GetCurrentStreak(ctx context.Context, habitID uint) (int, error)
+	GetUserHeatmap(ctx context.Context, userID uint, startDate time.Time) (map[string]int, error)
+
 }
 
 type analyticsRepo struct {
@@ -54,4 +56,40 @@ func (r *analyticsRepo) GetCurrentStreak(ctx context.Context, habitID uint) (int
 	}
 
 	return streak, nil
+}
+
+func (r *analyticsRepo) GetUserHeatmap(ctx context.Context, userID uint, startDate time.Time) (map[string]int, error) {
+	query := `
+		SELECT c.completed_at, COUNT(c.id)
+		FROM check_ins c
+		JOIN habits h ON c.habit_id = h.id
+		WHERE h.user_id = $1 AND c.completed_at >= $2
+		GROUP BY c.completed_at
+		ORDER BY c.completed_at ASC
+	`
+
+	rows, err := r.pool.Query(ctx, query, userID, startDate)
+	if err != nil {
+		return nil, fmt.Errorf("query heatmap: %w", err)
+	}
+	defer rows.Close()
+
+	heatmap := make(map[string]int)
+
+	for rows.Next() {
+		var date time.Time
+		var count int
+		
+		if err := rows.Scan(&date, &count); err != nil {
+			return nil, fmt.Errorf("scan heatmap row: %w", err)
+		}
+		
+		heatmap[date.Format("2006-01-02")] = count
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("iterate heatmap rows: %w", err)
+	}
+
+	return heatmap, nil
 }
