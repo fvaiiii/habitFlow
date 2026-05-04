@@ -9,24 +9,6 @@ import (
 	"github.com/fvaiiii/habitFlow/back/internal/repository"
 )
 
-/*
-CreateHabit:
-- проверить title
-- проверить frequency
-- вызвать repo.Create
-
-GetHabits:
-- просто вызвать repo
-
-UpdateHabit:
-- проверить, что пользователь владелец
-- вызвать repo.Update
-
-DeleteHabit:
-- проверить ownership
-- вызвать repo.Delete
-*/
-
 type HabitService interface {
 	CreateHabit(ctx context.Context, habit *model.Habit) (*model.Habit, error)
 	GetUserHabits(ctx context.Context, userId uint) ([]model.Habit, error)
