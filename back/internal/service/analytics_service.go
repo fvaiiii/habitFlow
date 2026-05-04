@@ -8,7 +8,7 @@ import (
 )
 
 type AnalyticsService interface {
-	GetHabitStreak(ctx context.Context, habitID uint) (int, error)
+	GetHabitStreak(ctx context.Context, habitID uint, userID uint) (int, error)
 	GetHeatmapForLastMonth(ctx context.Context, userID uint) (map[string]int, error)
 }
 
@@ -22,12 +22,12 @@ func NewAnalyticsService(repo repository.AnalyticsRepository) AnalyticsService {
 	}
 }
 
-func (s *analyticsService) GetHabitStreak(ctx context.Context, habitID uint) (int, error) {
-	return s.repo.GetCurrentStreak(ctx, habitID)
+func (s *analyticsService) GetHabitStreak(ctx context.Context, habitID uint, userID uint) (int, error) {
+	return s.repo.GetCurrentStreak(ctx, habitID, userID)
 }
 
 func (s *analyticsService) GetHeatmapForLastMonth(ctx context.Context, userID uint) (map[string]int, error) {
-	startDate := time.Now().AddDate(0, 0, -30)
+	startDate := time.Now().UTC().AddDate(0, 0, -30)
 	
 	return s.repo.GetUserHeatmap(ctx, userID, startDate)
 }

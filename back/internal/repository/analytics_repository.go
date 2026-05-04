@@ -11,9 +11,8 @@ import (
 )
 
 type AnalyticsRepository interface {
-	GetCurrentStreak(ctx context.Context, habitID uint) (int, error)
+	GetCurrentStreak(ctx context.Context, habitID uint, userID uint) (int, error)
 	GetUserHeatmap(ctx context.Context, userID uint, startDate time.Time) (map[string]int, error)
-
 }
 
 type analyticsRepo struct {
@@ -26,14 +25,15 @@ func NewAnalyticsRepo(pool *pgxpool.Pool) AnalyticsRepository {
 	}
 }
 
-func (r *analyticsRepo) GetCurrentStreak(ctx context.Context, habitID uint) (int, error) {
+func (r *analyticsRepo) GetCurrentStreak(ctx context.Context, habitID uint, userID uint) (int, error) {
 	query := `
 		WITH streaks AS (
 			SELECT
-				completed_at,
-				completed_at - (ROW_NUMBER() OVER (ORDER BY completed_at ASC))::int AS grp
-			FROM check_ins
-			WHERE habit_id = $1
+				c.completed_at,
+				c.completed_at - (ROW_NUMBER() OVER (ORDER BY c.completed_at ASC))::int AS grp
+			FROM check_ins c
+			JOIN habits h ON c.habit_id = h.id
+			WHERE c.habit_id = $1 AND h.user_id = $2 AND h.frequency = 'daily'
 		),
 		counted_streaks AS (
 			SELECT COUNT(*) as streak_len, MAX(completed_at) as end_date
@@ -48,7 +48,7 @@ func (r *analyticsRepo) GetCurrentStreak(ctx context.Context, habitID uint) (int
 	`
 
 	var streak int
-	err := r.pool.QueryRow(ctx, query, habitID).Scan(&streak)
+	err := r.pool.QueryRow(ctx, query, habitID, userID).Scan(&streak)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return 0, nil
@@ -61,12 +61,12 @@ func (r *analyticsRepo) GetCurrentStreak(ctx context.Context, habitID uint) (int
 
 func (r *analyticsRepo) GetUserHeatmap(ctx context.Context, userID uint, startDate time.Time) (map[string]int, error) {
 	query := `
-		SELECT c.completed_at, COUNT(c.id)
+		SELECT DATE(c.completed_at), COUNT(c.id)
 		FROM check_ins c
 		JOIN habits h ON c.habit_id = h.id
 		WHERE h.user_id = $1 AND c.completed_at >= $2
-		GROUP BY c.completed_at
-		ORDER BY c.completed_at ASC
+		GROUP BY DATE(c.completed_at)
+		ORDER BY DATE(c.completed_at) ASC
 	`
 
 	rows, err := r.pool.Query(ctx, query, userID, startDate)
