@@ -10,7 +10,6 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-
 type HabitRepository interface {
 	Create(ctx context.Context, habit *model.Habit) error
 	GetByUserID(ctx context.Context, userID uint) ([]model.Habit, error)
@@ -25,7 +24,7 @@ type habitRepo struct {
 	pool *pgxpool.Pool
 }
 
-func NewHabitRepo(pool *pgxpool.Pool) *habitRepo {
+func NewHabitRepo(pool *pgxpool.Pool) HabitRepository {
 	return &habitRepo{
 		pool: pool,
 	}
