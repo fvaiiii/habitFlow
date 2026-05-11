@@ -3,6 +3,7 @@ package api
 import (
 	"github.com/fvaiiii/habitFlow/back/internal/api/handler"
 	"github.com/fvaiiii/habitFlow/back/internal/repository"
+	"github.com/fvaiiii/habitFlow/back/internal/seed"
 	"github.com/fvaiiii/habitFlow/back/internal/service"
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -18,6 +19,8 @@ func NewServer(pool *pgxpool.Pool) *Server {
 		panic(err)
 	}
 
+	seed.Seed(pool)
+
 	habitRepo := repository.NewHabitRepo(pool)
 	habitService := service.NewHabitService(habitRepo)
 	habitHandler := handler.NewHabitHandler(habitService)
@@ -30,7 +33,11 @@ func NewServer(pool *pgxpool.Pool) *Server {
 	checkInService := service.NewCheckInService(checkInRepo)
 	checkInHandler := handler.NewCheckInHandler(checkInService)
 
-	registerRoutes(r, habitHandler, checkInHandler, analyticsHandler)
+	userRepo := repository.NewUserRepo(pool)
+	authService := service.NewAuthService(userRepo)
+	authHandler := handler.NewAuthHandler(authService)
+
+	registerRoutes(r, authHandler, habitHandler, checkInHandler, analyticsHandler)
 
 	return &Server{
 		router: r,

@@ -4,13 +4,10 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/fvaiiii/habitFlow/back/internal/api/dto"
 	"github.com/fvaiiii/habitFlow/back/internal/service"
 	"github.com/gin-gonic/gin"
 )
-
-type StreakResponse struct {
-	Streak int `json:"streak"`
-}
 
 type AnalyticsHandler struct {
 	service service.AnalyticsService
@@ -30,7 +27,7 @@ func (h *AnalyticsHandler) GetHabitStreak(c *gin.Context) {
 		return
 	}
 
-	userID := uint(1)
+	userID := c.GetUint("userID")
 
 	streak, err := h.service.GetHabitStreak(c.Request.Context(), uint(habitID), userID)
 	if err != nil {
@@ -38,11 +35,11 @@ func (h *AnalyticsHandler) GetHabitStreak(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, StreakResponse{Streak: streak})
+	c.JSON(http.StatusOK, dto.StreakResponse{Streak: streak})
 }
 
 func (h *AnalyticsHandler) GetHeatmap(c *gin.Context) {
-	userID := uint(1)
+	userID := c.GetUint("userID")
 
 	heatmap, err := h.service.GetHeatmapForLastMonth(c.Request.Context(), userID)
 	if err != nil {
