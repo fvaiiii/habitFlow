@@ -21,7 +21,11 @@ func NewServer(pool *pgxpool.Pool) *Server {
 	habitService := service.NewHabitService(habitRepo)
 	habitHandler := handler.NewHabitHandler(habitService)
 
-	registerRoutes(r, habitHandler)
+	analyticsRepo := repository.NewAnalyticsRepo(pool)
+	analyticsService := service.NewAnalyticsService(analyticsRepo)
+	analyticsHandler := handler.NewAnalyticsHandler(analyticsService)
+
+	registerRoutes(r, habitHandler, analyticsHandler)
 
 	return &Server{
 		router: r,
