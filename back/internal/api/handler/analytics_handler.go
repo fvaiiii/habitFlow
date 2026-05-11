@@ -4,8 +4,8 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/gin-gonic/gin"
 	"github.com/fvaiiii/habitFlow/back/internal/service"
+	"github.com/gin-gonic/gin"
 )
 
 type StreakResponse struct {

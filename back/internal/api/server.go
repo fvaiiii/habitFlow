@@ -17,6 +17,7 @@ func NewServer(pool *pgxpool.Pool) *Server {
 	if err := r.SetTrustedProxies(nil); err != nil {
 		panic(err)
 	}
+
 	habitRepo := repository.NewHabitRepo(pool)
 	habitService := service.NewHabitService(habitRepo)
 	habitHandler := handler.NewHabitHandler(habitService)
@@ -25,7 +26,11 @@ func NewServer(pool *pgxpool.Pool) *Server {
 	analyticsService := service.NewAnalyticsService(analyticsRepo)
 	analyticsHandler := handler.NewAnalyticsHandler(analyticsService)
 
-	registerRoutes(r, habitHandler, analyticsHandler)
+	checkInRepo := repository.NewCheckInRepo(pool)
+	checkInService := service.NewCheckInService(checkInRepo)
+	checkInHandler := handler.NewCheckInHandler(checkInService)
+
+	registerRoutes(r, habitHandler, checkInHandler, analyticsHandler)
 
 	return &Server{
 		router: r,
