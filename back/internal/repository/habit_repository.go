@@ -85,7 +85,7 @@ func (r *habitRepo) GetByUserID(ctx context.Context, userID uint) ([]model.Habit
 			&habit.UpdatedAt,
 		)
 		if err != nil {
-			return nil, fmt.Errorf("get by user id habit: %w", err)
+			return nil, fmt.Errorf("get habit by user id: %w", err)
 		}
 
 		habits = append(habits, habit)
