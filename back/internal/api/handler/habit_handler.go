@@ -55,7 +55,7 @@ func (h *HabitHandler) CreateHabit(c *gin.Context) {
 }
 
 func (h *HabitHandler) GetUserHabits(c *gin.Context) {
-	userId := uint(1) // поменяю чуть позже
+	userId := c.GetUint("userID")
 	habits, err := h.habitService.GetUserHabits(c.Request.Context(), userId)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
@@ -85,7 +85,7 @@ func (h *HabitHandler) GetHabit(c *gin.Context) {
 		return
 	}
 
-	userId := uint(1) // поменяю чуть позже
+	userId := c.GetUint("userID")
 	habit, err := h.habitService.GetHabit(c.Request.Context(), uint(id), userId)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
@@ -118,7 +118,7 @@ func (h *HabitHandler) UpdateHabit(c *gin.Context) {
 		return
 	}
 
-	userID := uint(1) // поменяю чуть позже
+	userID := c.GetUint("userID")
 
 	habit := &model.Habit{
 		ID:          uint(id),
@@ -154,7 +154,7 @@ func (h *HabitHandler) DeleteHabit(c *gin.Context) {
 		return
 	}
 
-	userId := uint(1) // поменяю чуть позже
+	userId := c.GetUint("userID")
 	if err := h.habitService.DeleteHabit(c.Request.Context(), uint(id), userId); err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
