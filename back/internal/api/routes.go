@@ -27,6 +27,7 @@ func registerRoutes(
 
 	protected := r.Group("/")
 	protected.Use(middleware.AuthMiddleware())
+	protected.GET("/me", authHandler.Me)
 
 	stats := protected.Group("/stats")
 	{

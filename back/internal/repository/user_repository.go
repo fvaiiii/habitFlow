@@ -9,7 +9,7 @@ import (
 
 type UserRepository interface {
 	GetByEmail(ctx context.Context, email string) (*model.User, error)
-	GetById(ctx context.Context, id uint) (*model.User, error)
+	GetByID(ctx context.Context, id uint) (*model.User, error)
 	Create(ctx context.Context, user *model.User) error
 }
 
@@ -45,7 +45,7 @@ func (r *userRepo) GetByEmail(ctx context.Context, email string) (*model.User, e
 	return &user, nil
 }
 
-func (r *userRepo) GetById(ctx context.Context, id uint) (*model.User, error) {
+func (r *userRepo) GetByID(ctx context.Context, id uint) (*model.User, error) {
 	query := `
 		SELECT id, email, password_hash, role, created_at
 		FROM users
