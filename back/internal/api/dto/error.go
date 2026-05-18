@@ -11,8 +11,3 @@ type MessageResponse struct {
 type TokenResponse struct {
 	Token string `json:"token"`
 }
-
-type UserResponse struct {
-	ID    uint   `json:"id"`
-	Email string `json:"email"`
-}

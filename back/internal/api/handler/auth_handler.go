@@ -122,3 +122,33 @@ func (h *AuthHandler) Me(c *gin.Context) {
 		Email: user.Email,
 	})
 }
+
+// GetAllUsers godoc
+// @Summary Get all users
+// @Tags admin
+// @Security BearerAuth
+// @Produce json
+// @Success 200 {array} dto.UserAdminResponse
+// @Failure 403 {object} dto.ErrorResponse
+// @Router /admin/users [get]
+func (h *AuthHandler) GetAllUsers(c *gin.Context) {
+	users, err := h.service.GetAllUsers(c.Request.Context())
+	if err != nil {
+		c.JSON(http.StatusNotFound, dto.ErrorResponse{
+			Error: "users not found",
+		})
+		return
+	}
+
+	resp := make([]dto.UserAdminResponse, 0, len(users))
+
+	for _, user := range users {
+		resp = append(resp, dto.UserAdminResponse{
+			ID:    user.ID,
+			Email: user.Email,
+			Role:  user.Role,
+		})
+	}
+
+	c.JSON(http.StatusOK, resp)
+}

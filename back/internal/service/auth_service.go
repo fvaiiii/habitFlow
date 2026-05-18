@@ -13,6 +13,7 @@ type AuthService interface {
 	Register(ctx context.Context, email, password string) error
 	Login(ctx context.Context, email, password string) (string, error)
 	GetByID(ctx context.Context, id uint) (*model.User, error)
+	GetAllUsers(ctx context.Context) ([]model.User, error)
 }
 
 type authService struct {
@@ -70,4 +71,13 @@ func (s *authService) GetByID(ctx context.Context, id uint) (*model.User, error)
 	}
 
 	return user, nil
+}
+
+func (s *authService) GetAllUsers(ctx context.Context) ([]model.User, error) {
+	users, err := s.users.GetAll(ctx)
+	if err != nil {
+		return nil, apierrors.ErrNotFound
+	}
+
+	return users, nil
 }
