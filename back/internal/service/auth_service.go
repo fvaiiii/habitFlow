@@ -12,6 +12,7 @@ import (
 type AuthService interface {
 	Register(ctx context.Context, email, password string) error
 	Login(ctx context.Context, email, password string) (string, error)
+	GetByID(ctx context.Context, id uint) (*model.User, error)
 }
 
 type authService struct {
@@ -53,5 +54,5 @@ func (s *authService) Login(ctx context.Context, email, password string) (string
 }
 
 func (s *authService) GetByID(ctx context.Context, id uint) (*model.User, error) {
-    return s.users.GetByID(ctx, id)
+	return s.users.GetByID(ctx, id)
 }
