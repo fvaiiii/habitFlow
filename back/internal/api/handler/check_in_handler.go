@@ -21,13 +21,20 @@ func NewCheckInHandler(checkInService service.CheckInService) *CheckInHandler {
 	}
 }
 
+// CreateCheckIn godoc
+// @Summary Create check-in for habit
+// @Tags check-ins
+// @Security BearerAuth
+// @Produce json
+// @Param id path int true "habit id"
+// @Success 201 {object} dto.CheckInResponse
+// @Failure 400 {object} dto.ErrorResponse
+// @Router /habits/{id}/check-ins [post]
 func (h *CheckInHandler) CreateCheckIn(c *gin.Context) {
-	idStr := c.Param("id")
-
-	habitID, err := strconv.ParseUint(idStr, 10, 64)
+	habitID, err := strconv.ParseUint(c.Param("id"), 10, 64)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "invalid habit id",
+		c.JSON(http.StatusBadRequest, dto.ErrorResponse{
+			Error: "invalid id",
 		})
 		return
 	}
@@ -37,55 +44,48 @@ func (h *CheckInHandler) CreateCheckIn(c *gin.Context) {
 		CompletedAt: time.Now(),
 	}
 
-	createdCheckIn, err := h.checkInService.CreateCheckIn(
-		c.Request.Context(),
-		checkIn,
-	)
+	res, err := h.checkInService.CreateCheckIn(c.Request.Context(), checkIn)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
-		})
+		c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: err.Error()})
 		return
 	}
 
-	resp := dto.CheckInResponse{
-		ID:          createdCheckIn.ID,
-		HabitID:     createdCheckIn.HabitID,
-		CompletedAt: createdCheckIn.CompletedAt,
-	}
-
-	c.JSON(http.StatusCreated, resp)
+	c.JSON(http.StatusCreated, dto.CheckInResponse{
+		ID:          res.ID,
+		HabitID:     res.HabitID,
+		CompletedAt: res.CompletedAt,
+	})
 }
 
+// GetHabitCheckIns godoc
+// @Summary Get check-ins for habit
+// @Tags check-ins
+// @Security BearerAuth
+// @Produce json
+// @Param id path int true "habit id"
+// @Success 200 {array} dto.CheckInResponse
+// @Router /habits/{id}/check-ins [get]
 func (h *CheckInHandler) GetHabitCheckIns(c *gin.Context) {
-	idStr := c.Param("id")
-
-	habitID, err := strconv.ParseUint(idStr, 10, 64)
+	habitID, err := strconv.ParseUint(c.Param("id"), 10, 64)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "invalid habit id",
+		c.JSON(http.StatusBadRequest, dto.ErrorResponse{
+			Error: "invalid id",
 		})
 		return
 	}
 
-	checkIns, err := h.checkInService.GetHabitCheckIns(
-		c.Request.Context(),
-		uint(habitID),
-	)
+	checkIns, err := h.checkInService.GetHabitCheckIns(c.Request.Context(), uint(habitID))
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
-		})
+		c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: err.Error()})
 		return
 	}
 
 	resp := make([]dto.CheckInResponse, 0, len(checkIns))
-
-	for _, checkIn := range checkIns {
+	for _, ci := range checkIns {
 		resp = append(resp, dto.CheckInResponse{
-			ID:          checkIn.ID,
-			HabitID:     checkIn.HabitID,
-			CompletedAt: checkIn.CompletedAt,
+			ID:          ci.ID,
+			HabitID:     ci.HabitID,
+			CompletedAt: ci.CompletedAt,
 		})
 	}
 

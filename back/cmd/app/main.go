@@ -1,5 +1,15 @@
 package main
 
+// @title HabitFlow API
+// @version 1.0
+// @description Habit tracking service
+// @host localhost:8080
+// @BasePath /api
+
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
+
 import (
 	"database/sql"
 	"fmt"
@@ -11,6 +21,8 @@ import (
 	"github.com/fvaiiii/habitFlow/back/pkg/migrator"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/joho/godotenv"
+
+	_ "github.com/fvaiiii/habitFlow/back/docs"
 )
 
 func main() {
