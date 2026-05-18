@@ -78,6 +78,15 @@ definitions:
       title:
         type: string
     type: object
+  dto.UserAdminResponse:
+    properties:
+      email:
+        type: string
+      id:
+        type: integer
+      role:
+        type: string
+    type: object
   dto.UserResponse:
     properties:
       email:
@@ -92,6 +101,26 @@ info:
   title: HabitFlow API
   version: "1.0"
 paths:
+  /admin/users:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/dto.UserAdminResponse'
+            type: array
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get all users
+      tags:
+      - admin
   /analytics/heatmap:
     get:
       produces:

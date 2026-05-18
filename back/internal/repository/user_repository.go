@@ -10,6 +10,7 @@ import (
 type UserRepository interface {
 	GetByEmail(ctx context.Context, email string) (*model.User, error)
 	GetByID(ctx context.Context, id uint) (*model.User, error)
+	GetAll(ctx context.Context) ([]model.User, error)
 	Create(ctx context.Context, user *model.User) error
 }
 
@@ -54,19 +55,52 @@ func (r *userRepo) GetByID(ctx context.Context, id uint) (*model.User, error) {
 
 	var user model.User
 	err := r.pool.QueryRow(ctx, query, id).Scan(
-		&user.ID, 
-		&user.Email, 
-		&user.PasswordHash, 
-		&user.Role, 
+		&user.ID,
+		&user.Email,
+		&user.PasswordHash,
+		&user.Role,
 		&user.CreatedAt,
 	)
 
 	if err != nil {
-		return nil, err 
+		return nil, err
 	}
 
 	return &user, nil
 }
+
+func (r *userRepo) GetAll(ctx context.Context) ([]model.User, error) {
+	query := `
+		SELECT id, email, role
+		FROM users
+		ORDER BY id
+	`
+
+	rows, err := r.pool.Query(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var users []model.User
+
+	for rows.Next() {
+		var user model.User
+
+		if err := rows.Scan(
+			&user.ID,
+			&user.Email,
+			&user.Role,
+		); err != nil {
+			return nil, err
+		}
+
+		users = append(users, user)
+	}
+
+	return users, nil
+}
+
 func (r *userRepo) Create(ctx context.Context, user *model.User) error {
 	query := `
 		INSERT INTO users (email, password_hash, role, created_at)
