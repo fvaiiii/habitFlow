@@ -6,6 +6,9 @@ import (
 	"github.com/fvaiiii/habitFlow/back/internal/api/handler"
 	"github.com/fvaiiii/habitFlow/back/internal/api/middleware"
 	"github.com/gin-gonic/gin"
+
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
 func registerRoutes(
@@ -21,6 +24,8 @@ func registerRoutes(
 			"status": "ok",
 		})
 	})
+
+	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	r.POST("/register", authHandler.Register)
 	r.POST("/login", authHandler.Login)
