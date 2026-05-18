@@ -112,7 +112,7 @@ func (h *AuthHandler) Me(c *gin.Context) {
 	user, err := h.service.GetByID(c.Request.Context(), userID)
 	if err != nil {
 		c.JSON(http.StatusNotFound, dto.ErrorResponse{
-			Error: "users not found",
+			Error: "user not found",
 		})
 		return
 	}
@@ -134,7 +134,9 @@ func (h *AuthHandler) Me(c *gin.Context) {
 func (h *AuthHandler) GetAllUsers(c *gin.Context) {
 	users, err := h.service.GetAllUsers(c.Request.Context())
 	if err != nil {
-		handleError(c, err)
+		c.JSON(http.StatusNotFound, dto.ErrorResponse{
+			Error: "users not found",
+		})
 		return
 	}
 
