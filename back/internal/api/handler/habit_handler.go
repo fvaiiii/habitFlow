@@ -205,3 +205,46 @@ func (h *HabitHandler) DeleteHabit(c *gin.Context) {
 
 	c.JSON(http.StatusNoContent, nil)
 }
+
+// CreateFromTemplate godoc
+// @Summary Create habit from template
+// @Tags habits
+// @Security BearerAuth
+// @Produce json
+// @Param id path int true "template id"
+// @Success 201 {object} dto.HabitResponse
+// @Failure 400 {object} dto.ErrorResponse
+// @Failure 404 {object} dto.ErrorResponse
+// @Router /templates/{id}/use [post]
+func (h *HabitHandler) CreateFromTemplate(c *gin.Context) {
+	templateID, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, dto.ErrorResponse{
+			Error: "invalid template id",
+		})
+		return
+	}
+
+	userID := c.GetUint("userID")
+
+	habit, err := h.habitService.CreateFromTemplate(
+		c.Request.Context(),
+		uint(templateID),
+		userID,
+	)
+	if err != nil {
+		c.JSON(http.StatusNotFound, dto.ErrorResponse{
+			Error: err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusCreated, dto.HabitResponse{
+		ID:          habit.ID,
+		Title:       habit.Title,
+		Description: habit.Description,
+		Frequency:   habit.Frequency,
+		CreatedAt:   habit.CreatedAt,
+		UpdatedAt:   habit.UpdatedAt,
+	})
+}

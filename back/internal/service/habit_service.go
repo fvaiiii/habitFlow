@@ -15,15 +15,18 @@ type HabitService interface {
 	GetHabit(ctx context.Context, habitId, userId uint) (*model.Habit, error)
 	UpdateHabit(ctx context.Context, habit *model.Habit) (*model.Habit, error)
 	DeleteHabit(ctx context.Context, habitId, userId uint) error
+	CreateFromTemplate(ctx context.Context, templateID uint, userID uint) (*model.Habit, error)
 }
 
 type habitService struct {
-	habitRepo repository.HabitRepository
+	habitRepo    repository.HabitRepository
+	templateRepo repository.HabitTemplateRepository
 }
 
-func NewHabitService(habitRepo repository.HabitRepository) HabitService {
+func NewHabitService(habitRepo repository.HabitRepository, templateRepo repository.HabitTemplateRepository) HabitService {
 	return &habitService{
-		habitRepo: habitRepo,
+		habitRepo:    habitRepo,
+		templateRepo: templateRepo,
 	}
 }
 
@@ -87,4 +90,26 @@ func (s *habitService) DeleteHabit(ctx context.Context, habitId, userId uint) er
 		return apierrors.ErrNotFound
 	}
 	return nil
+}
+
+func (s *habitService) CreateFromTemplate(ctx context.Context, templateID uint, userID uint) (*model.Habit, error) {
+	template, err := s.templateRepo.GetByID(ctx, templateID)
+	if err != nil {
+		return nil, apierrors.ErrInternal
+	}
+
+	habit := &model.Habit{
+		UserID:      userID,
+		Title:       template.Title,
+		Description: template.Description,
+		Frequency:   template.Frequency,
+		TemplateID:  &template.ID,
+	}
+
+	err = s.habitRepo.Create(ctx, habit)
+	if err != nil {
+		return nil, apierrors.ErrInternal
+	}
+
+	return habit, nil
 }

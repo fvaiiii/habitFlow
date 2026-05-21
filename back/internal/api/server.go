@@ -15,14 +15,16 @@ type Server struct {
 
 func NewServer(pool *pgxpool.Pool) *Server {
 	r := gin.Default()
-	if err := r.SetTrustedProxies(nil); err != nil {
-		panic(err)
-	}
+	_ = r.SetTrustedProxies(nil)
 
 	seed.Seed(pool)
 
+	templateRepo := repository.NewHabitTemplateRepo(pool)
+	templateService := service.NewHabitTemplateService(templateRepo)
+	templateHandler := handler.NewHabitTemplateHandler(templateService)
+
 	habitRepo := repository.NewHabitRepo(pool)
-	habitService := service.NewHabitService(habitRepo)
+	habitService := service.NewHabitService(habitRepo, templateRepo)
 	habitHandler := handler.NewHabitHandler(habitService)
 
 	analyticsRepo := repository.NewAnalyticsRepo(pool)
@@ -37,13 +39,18 @@ func NewServer(pool *pgxpool.Pool) *Server {
 	authService := service.NewAuthService(userRepo)
 	authHandler := handler.NewAuthHandler(authService)
 
-	registerRoutes(r, authHandler, habitHandler, checkInHandler, analyticsHandler)
+	registerRoutes(
+		r,
+		authHandler,
+		habitHandler,
+		checkInHandler,
+		analyticsHandler,
+		templateHandler,
+	)
 
-	return &Server{
-		router: r,
-	}
+	return &Server{router: r}
 }
 
-func (s *Server) Run(addr string) error {
-	return s.router.Run(addr)
+func (s *Server) Router() *gin.Engine {
+	return s.router
 }
