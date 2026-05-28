@@ -56,7 +56,7 @@ func (s *authService) Login(ctx context.Context, email, password string) (string
 		return "", apierrors.ErrUnauthorized
 	}
 
-	token, err := auth.GenerateToken(user.ID)
+	token, err := auth.GenerateToken(user.ID, user.Role)
 	if err != nil {
 		return "", apierrors.ErrInternal
 	}

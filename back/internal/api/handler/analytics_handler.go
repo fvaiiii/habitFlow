@@ -55,7 +55,7 @@ func (h *AnalyticsHandler) GetHabitStreak(c *gin.Context) {
 // @Security BearerAuth
 // @Produce json
 // @Success 200 {object} dto.HeatmapResponse
-// @Router /analytics/heatmap [get]
+// @Router /stats/heatmap [get]
 func (h *AnalyticsHandler) GetHeatmap(c *gin.Context) {
 	userID := c.GetUint("userID")
 

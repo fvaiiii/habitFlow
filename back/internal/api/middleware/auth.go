@@ -31,6 +31,7 @@ func AuthMiddleware() gin.HandlerFunc {
 		}
 
 		c.Set("userID", claims.UserID)
+		c.Set("role", claims.Role)
 
 		c.Next()
 
@@ -39,17 +40,18 @@ func AuthMiddleware() gin.HandlerFunc {
 
 func AdminOnly() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		role, exists := c.Get("role")
+		roleVal, exists := c.Get("role")
 		if !exists {
 			c.AbortWithStatusJSON(401, dto.ErrorResponse{
 				Error: "unauthorized",
 			})
 			return
 		}
-
-		if role != "admin" {
+		
+		role, ok := roleVal.(string)
+		if !ok || role != "superuser" {
 			c.AbortWithStatusJSON(403, dto.ErrorResponse{
-				Error: "forbidden",
+				Error: "invalid role",
 			})
 			return
 		}

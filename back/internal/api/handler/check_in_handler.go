@@ -1,11 +1,13 @@
 package handler
 
 import (
+	"errors"
 	"net/http"
 	"strconv"
 	"time"
 
 	"github.com/fvaiiii/habitFlow/back/internal/api/dto"
+	"github.com/fvaiiii/habitFlow/back/internal/apierrors"
 	"github.com/fvaiiii/habitFlow/back/internal/model"
 	"github.com/fvaiiii/habitFlow/back/internal/service"
 	"github.com/gin-gonic/gin"
@@ -38,15 +40,17 @@ func (h *CheckInHandler) CreateCheckIn(c *gin.Context) {
 		})
 		return
 	}
-
+	
 	checkIn := &model.CheckIn{
 		HabitID:     uint(habitID),
 		CompletedAt: time.Now(),
 	}
 
-	res, err := h.checkInService.CreateCheckIn(c.Request.Context(), checkIn)
+	userID := c.GetUint("userID")
+
+	res, err := h.checkInService.CreateCheckIn(c.Request.Context(), checkIn, userID)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: err.Error()})
+		respondCheckInError(c, err)
 		return
 	}
 
@@ -74,9 +78,11 @@ func (h *CheckInHandler) GetHabitCheckIns(c *gin.Context) {
 		return
 	}
 
-	checkIns, err := h.checkInService.GetHabitCheckIns(c.Request.Context(), uint(habitID))
+	userID := c.GetUint("userID")
+
+	checkIns, err := h.checkInService.GetHabitCheckIns(c.Request.Context(), uint(habitID), userID)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: err.Error()})
+		respondCheckInError(c, err)
 		return
 	}
 
@@ -90,4 +96,19 @@ func (h *CheckInHandler) GetHabitCheckIns(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, resp)
+}
+
+func respondCheckInError(c *gin.Context, err error) {
+	switch {
+	case errors.Is(err, apierrors.ErrNotFound):
+		c.JSON(http.StatusNotFound, dto.ErrorResponse{Error: err.Error()})
+	case errors.Is(err, apierrors.ErrForbidden):
+		c.JSON(http.StatusForbidden, dto.ErrorResponse{Error: err.Error()})
+	case errors.Is(err, apierrors.ErrConflict):
+		c.JSON(http.StatusConflict, dto.ErrorResponse{Error: err.Error()})
+	case errors.Is(err, apierrors.ErrValidation):
+		c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: err.Error()})
+	default:
+		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Error: err.Error()})
+	}
 }

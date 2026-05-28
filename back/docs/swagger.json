@@ -1,13 +1,8 @@
 {
     "swagger": "2.0",
     "info": {
-        "description": "Habit tracking service",
-        "title": "HabitFlow API",
-        "contact": {},
-        "version": "1.0"
+        "contact": {}
     },
-    "host": "localhost:8080",
-    "basePath": "/api",
     "paths": {
         "/admin/templates": {
             "post": {
@@ -131,30 +126,6 @@
                 }
             }
         },
-        "/analytics/heatmap": {
-            "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "analytics"
-                ],
-                "summary": "Get heatmap for user",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/dto.HeatmapResponse"
-                        }
-                    }
-                }
-            }
-        },
         "/habits": {
             "get": {
                 "security": [
@@ -262,7 +233,32 @@
                     }
                 }
             },
-            "put": {
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "tags": [
+                    "habits"
+                ],
+                "summary": "Delete habit",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "habit id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                }
+            },
+            "patch": {
                 "security": [
                     {
                         "BearerAuth": []
@@ -302,31 +298,6 @@
                         "schema": {
                             "$ref": "#/definitions/dto.HabitResponse"
                         }
-                    }
-                }
-            },
-            "delete": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "tags": [
-                    "habits"
-                ],
-                "summary": "Delete habit",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "habit id",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "204": {
-                        "description": "No Content"
                     }
                 }
             }
@@ -558,6 +529,30 @@
                         "description": "Internal Server Error",
                         "schema": {
                             "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/stats/heatmap": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "analytics"
+                ],
+                "summary": "Get heatmap for user",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.HeatmapResponse"
                         }
                     }
                 }
@@ -846,13 +841,6 @@
                     "type": "integer"
                 }
             }
-        }
-    },
-    "securityDefinitions": {
-        "BearerAuth": {
-            "type": "apiKey",
-            "name": "Authorization",
-            "in": "header"
         }
     }
 }

@@ -60,6 +60,7 @@ func registerRoutes(
 	admin := protected.Group("/admin")
 	admin.Use(middleware.AdminOnly())
 	{
+		admin.GET("/users", authHandler.GetAllUsers)
 		admin.POST("/templates", templateHandler.CreateTemplate)
 		admin.DELETE("/templates/:id", templateHandler.DeleteTemplate)
 	}
