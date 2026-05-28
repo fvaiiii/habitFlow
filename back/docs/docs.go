@@ -137,30 +137,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/analytics/heatmap": {
-            "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "analytics"
-                ],
-                "summary": "Get heatmap for user",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/dto.HeatmapResponse"
-                        }
-                    }
-                }
-            }
-        },
         "/habits": {
             "get": {
                 "security": [
@@ -268,7 +244,32 @@ const docTemplate = `{
                     }
                 }
             },
-            "put": {
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "tags": [
+                    "habits"
+                ],
+                "summary": "Delete habit",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "habit id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                }
+            },
+            "patch": {
                 "security": [
                     {
                         "BearerAuth": []
@@ -308,31 +309,6 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/dto.HabitResponse"
                         }
-                    }
-                }
-            },
-            "delete": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "tags": [
-                    "habits"
-                ],
-                "summary": "Delete habit",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "habit id",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "204": {
-                        "description": "No Content"
                     }
                 }
             }
@@ -564,6 +540,30 @@ const docTemplate = `{
                         "description": "Internal Server Error",
                         "schema": {
                             "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/stats/heatmap": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "analytics"
+                ],
+                "summary": "Get heatmap for user",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.HeatmapResponse"
                         }
                     }
                 }
@@ -853,24 +853,17 @@ const docTemplate = `{
                 }
             }
         }
-    },
-    "securityDefinitions": {
-        "BearerAuth": {
-            "type": "apiKey",
-            "name": "Authorization",
-            "in": "header"
-        }
     }
 }`
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
-	Version:          "1.0",
-	Host:             "localhost:8080",
-	BasePath:         "/api",
+	Version:          "",
+	Host:             "",
+	BasePath:         "",
 	Schemes:          []string{},
-	Title:            "HabitFlow API",
-	Description:      "Habit tracking service",
+	Title:            "",
+	Description:      "",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",

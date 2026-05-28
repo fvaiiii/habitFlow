@@ -11,10 +11,11 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/joho/godotenv"
 	_ "github.com/jackc/pgx/v5/stdlib"
+	"github.com/joho/godotenv"
 
 	"github.com/fvaiiii/habitFlow/back/internal/api"
+	"github.com/fvaiiii/habitFlow/back/internal/auth"
 	"github.com/fvaiiii/habitFlow/back/internal/config"
 	"github.com/fvaiiii/habitFlow/back/internal/db"
 	"github.com/fvaiiii/habitFlow/back/pkg/migrator"
@@ -28,6 +29,10 @@ func main() {
 	cfg, err := config.LoadConfig()
 	if err != nil {
 		log.Fatalf("config error: %v", err)
+	}
+
+	if err := auth.Init(cfg.JWT.JWTSecret, cfg.JWT.AccessTTL); err != nil {
+		log.Fatalf("jwt init error: %v", err)
 	}
 
 	pool, err := db.NewPostgresPool(cfg.Postgres)
@@ -50,7 +55,7 @@ func main() {
 		log.Fatalf("migrations failed: %v", err)
 	}
 
-	server := api.NewServer(pool)
+	server := api.NewServer(pool, cfg)
 
 	httpServer := &http.Server{
 		Addr:    fmt.Sprintf("%s:%d", cfg.HTTP.Host, cfg.HTTP.Port),

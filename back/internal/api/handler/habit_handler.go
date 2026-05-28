@@ -139,7 +139,7 @@ func (h *HabitHandler) GetHabit(c *gin.Context) {
 // @Param id path int true "habit id"
 // @Param request body dto.UpdateHabitRequest true "update data"
 // @Success 200 {object} dto.HabitResponse
-// @Router /habits/{id} [put]
+// @Router /habits/{id} [patch]
 func (h *HabitHandler) UpdateHabit(c *gin.Context) {
 	var req dto.UpdateHabitRequest
 

@@ -9,7 +9,6 @@ type Config struct {
 	ENV      string
 	HTTP     HTTPConfig
 	Postgres PostgresConfig
-	Redis    RedisConfig
 	JWT      JWTConfig
 }
 
@@ -28,12 +27,6 @@ type PostgresConfig struct {
 	DB       string
 	SSLMode  string
 	Timeout  time.Duration
-}
-
-type RedisConfig struct {
-	Host    string
-	Port    int
-	Timeout time.Duration
 }
 
 type JWTConfig struct {
@@ -74,12 +67,6 @@ func LoadConfig() (*Config, error) {
 			DB:       getEnv("POSTGRES_DB", ""),
 			SSLMode:  getEnv("POSTGRES_SSL_MODE", "disable"),
 			Timeout:  getEnvAsDuration("POSTGRES_TIMEOUT", 5*time.Second),
-		},
-
-		Redis: RedisConfig{
-			Host:    getEnv("REDIS_HOST", "localhost"),
-			Port:    getEnvAsInt("REDIS_PORT", 6379),
-			Timeout: getEnvAsDuration("REDIS_TIMEOUT", 3*time.Second),
 		},
 
 		JWT: JWTConfig{
@@ -131,18 +118,6 @@ func (c *Config) Validate() error {
 
 	if c.Postgres.Timeout <= 0 {
 		return fmt.Errorf("Postgres.Timeout must be greater than 0")
-	}
-
-	if c.Redis.Host == "" {
-		return fmt.Errorf("Redis.Host is required")
-	}
-
-	if c.Redis.Port <= 0 {
-		return fmt.Errorf("Redis.Port must be greater than 0")
-	}
-
-	if c.Redis.Timeout <= 0 {
-		return fmt.Errorf("Redis.Timeout must be greater than 0")
 	}
 
 	if c.JWT.JWTSecret == "" {

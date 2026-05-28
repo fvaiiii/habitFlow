@@ -1,4 +1,3 @@
-basePath: /api
 definitions:
   dto.AuthRequest:
     properties:
@@ -116,12 +115,8 @@ definitions:
       id:
         type: integer
     type: object
-host: localhost:8080
 info:
   contact: {}
-  description: Habit tracking service
-  title: HabitFlow API
-  version: "1.0"
 paths:
   /admin/templates:
     post:
@@ -198,20 +193,6 @@ paths:
       summary: Get all users
       tags:
       - admin
-  /analytics/heatmap:
-    get:
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/dto.HeatmapResponse'
-      security:
-      - BearerAuth: []
-      summary: Get heatmap for user
-      tags:
-      - analytics
   /habits:
     get:
       produces:
@@ -293,7 +274,7 @@ paths:
       summary: Get habit by id
       tags:
       - habits
-    put:
+    patch:
       consumes:
       - application/json
       parameters:
@@ -465,6 +446,20 @@ paths:
       summary: Register user
       tags:
       - auth
+  /stats/heatmap:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.HeatmapResponse'
+      security:
+      - BearerAuth: []
+      summary: Get heatmap for user
+      tags:
+      - analytics
   /templates:
     get:
       produces:
@@ -529,9 +524,4 @@ paths:
       summary: Create habit from template
       tags:
       - habits
-securityDefinitions:
-  BearerAuth:
-    in: header
-    name: Authorization
-    type: apiKey
 swagger: "2.0"

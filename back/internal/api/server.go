@@ -2,6 +2,7 @@ package api
 
 import (
 	"github.com/fvaiiii/habitFlow/back/internal/api/handler"
+	"github.com/fvaiiii/habitFlow/back/internal/config"
 	"github.com/fvaiiii/habitFlow/back/internal/repository"
 	"github.com/fvaiiii/habitFlow/back/internal/seed"
 	"github.com/fvaiiii/habitFlow/back/internal/service"
@@ -13,7 +14,8 @@ type Server struct {
 	router *gin.Engine
 }
 
-func NewServer(pool *pgxpool.Pool) *Server {
+func NewServer(pool *pgxpool.Pool, cfg *config.Config) *Server {
+
 	r := gin.Default()
 	_ = r.SetTrustedProxies(nil)
 
@@ -32,7 +34,7 @@ func NewServer(pool *pgxpool.Pool) *Server {
 	analyticsHandler := handler.NewAnalyticsHandler(analyticsService)
 
 	checkInRepo := repository.NewCheckInRepo(pool)
-	checkInService := service.NewCheckInService(checkInRepo)
+	checkInService := service.NewCheckInService(checkInRepo, habitRepo)
 	checkInHandler := handler.NewCheckInHandler(checkInService)
 
 	userRepo := repository.NewUserRepo(pool)
