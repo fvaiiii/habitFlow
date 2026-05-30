@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getHabits, getHeatmap, getStreak } from '../api/habits';
+import Navbar from '../components/Navbar';
 
 export default function Stats() {
   const [habits, setHabits] = useState([]);
@@ -21,9 +22,7 @@ export default function Stats() {
       try {
         const heatmapRes = await getHeatmap();
         setHeatmap(heatmapRes.data.data || {});
-      } catch (err) {
-        console.error('Ошибка тепловой карты:', err);
-      }
+      } catch (err) {}
       
       const streaksData = {};
       for (const habit of habitsRes.data) {
@@ -35,9 +34,6 @@ export default function Stats() {
         }
       }
       setStreaks(streaksData);
-      
-    } catch (err) {
-      console.error('Ошибка загрузки статистики:', err);
     } finally {
       setLoading(false);
     }
@@ -48,7 +44,6 @@ export default function Stats() {
   const completedToday = heatmap[today] || 0;
   const completionPercent = totalHabits > 0 ? Math.round((completedToday / totalHabits) * 100) : 0;
 
-  // Статистика за неделю
   const getLast7Days = () => {
     const days = [];
     for (let i = 6; i >= 0; i--) {
@@ -61,113 +56,81 @@ export default function Stats() {
 
   const last7Days = getLast7Days();
   const weeklyTotal = last7Days.reduce((sum, date) => sum + (heatmap[date] || 0), 0);
-
-  // Лучшая серия
   const maxStreak = Object.values(streaks).length > 0 ? Math.max(...Object.values(streaks)) : 0;
-  const bestHabit = habits.find(h => streaks[h.id] === maxStreak);
 
-  const logout = () => {
-    localStorage.removeItem('token');
-    navigate('/login');
-  };
-
-  if (loading) return <div style={{ textAlign: 'center', marginTop: 50 }}>Загрузка статистики...</div>;
+  if (loading) return <div style={{ textAlign: 'center', padding: 50, color: '#8b9a7a' }}>Загрузка...</div>;
 
   return (
-    <div style={{ maxWidth: 1000, margin: '0 auto', padding: 20 }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h1>📊 Статистика привычек</h1>
-        <div>
-          <button onClick={() => navigate('/')} style={{ marginRight: 10, padding: 8 }}>
-            ← На главную
-          </button>
-          <button onClick={logout} style={{ padding: 8 }}>Выйти</button>
+    <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 20px' }}>
+      <Navbar />
+      <h1 style={{ fontSize: 28, fontWeight: 500, color: '#7b8a6b', textAlign: 'center', margin: '32px 0' }}>Статистика</h1>
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16, marginBottom: 40 }}>
+        <div style={{ background: 'white', padding: 24, borderRadius: 20, textAlign: 'center', border: '1px solid #e8e0d5' }}>
+          <div style={{ fontSize: 32, fontWeight: 600, color: '#5b7a5a' }}>{totalHabits}</div>
+          <div style={{ color: '#b8c8a8', fontSize: 13, marginTop: 8 }}>Всего привычек</div>
+        </div>
+        <div style={{ background: 'white', padding: 24, borderRadius: 20, textAlign: 'center', border: '1px solid #e8e0d5' }}>
+          <div style={{ fontSize: 32, fontWeight: 600, color: '#5b7a5a' }}>{completedToday}</div>
+          <div style={{ color: '#b8c8a8', fontSize: 13, marginTop: 8 }}>Выполнено сегодня</div>
+        </div>
+        <div style={{ background: 'white', padding: 24, borderRadius: 20, textAlign: 'center', border: '1px solid #e8e0d5' }}>
+          <div style={{ fontSize: 32, fontWeight: 600, color: '#5b7a5a' }}>{completionPercent}%</div>
+          <div style={{ color: '#b8c8a8', fontSize: 13, marginTop: 8 }}>Процент выполнения</div>
+        </div>
+        <div style={{ background: 'white', padding: 24, borderRadius: 20, textAlign: 'center', border: '1px solid #e8e0d5' }}>
+          <div style={{ fontSize: 32, fontWeight: 600, color: '#5b7a5a' }}>{weeklyTotal}</div>
+          <div style={{ color: '#b8c8a8', fontSize: 13, marginTop: 8 }}>Выполнено за неделю</div>
         </div>
       </div>
 
-      {/* Карточки со статистикой */}
-      <div style={{ 
-        display: 'grid', 
-        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
-        gap: 16,
-        marginTop: 30
-      }}>
-        <div style={{ border: '1px solid #ddd', padding: 20, borderRadius: 8, textAlign: 'center', background: '#667eea', color: 'white' }}>
-          <h2 style={{ margin: 0, fontSize: 36 }}>{totalHabits}</h2>
-          <p>Всего привычек</p>
-        </div>
-
-        <div style={{ border: '1px solid #ddd', padding: 20, borderRadius: 8, textAlign: 'center', background: '#f093fb', color: 'white' }}>
-          <h2 style={{ margin: 0, fontSize: 36 }}>{completedToday}</h2>
-          <p>Выполнено сегодня</p>
-        </div>
-
-        <div style={{ border: '1px solid #ddd', padding: 20, borderRadius: 8, textAlign: 'center', background: '#4facfe', color: 'white' }}>
-          <h2 style={{ margin: 0, fontSize: 36 }}>{completionPercent}%</h2>
-          <p>Процент выполнения</p>
-        </div>
-
-        <div style={{ border: '1px solid #ddd', padding: 20, borderRadius: 8, textAlign: 'center', background: '#43e97b', color: 'white' }}>
-          <h2 style={{ margin: 0, fontSize: 36 }}>{weeklyTotal}</h2>
-          <p>Выполнено за неделю</p>
-        </div>
-      </div>
-
-      {/* Лучшая серия */}
       {maxStreak > 0 && (
-        <div style={{ marginTop: 30, background: '#fa709a', padding: 20, borderRadius: 12, color: 'white', textAlign: 'center' }}>
-          <h2 style={{ margin: 0 }}>🏆 Лучшая серия</h2>
-          <p style={{ fontSize: 48, margin: '10px 0', fontWeight: 'bold' }}>{maxStreak} дней</p>
-          {bestHabit && <p>У привычки <strong>"{bestHabit.title}"</strong></p>}
+        <div style={{ background: '#e8f0e8', padding: 24, borderRadius: 20, textAlign: 'center', marginBottom: 40 }}>
+          <div style={{ fontSize: 14, color: '#7b8a6b', marginBottom: 8 }}>Лучшая серия</div>
+          <div style={{ fontSize: 48, fontWeight: 600, color: '#5b7a5a' }}>{maxStreak} дней</div>
         </div>
       )}
 
-      {/* Тепловая карта за последние 7 дней */}
-      <div style={{ marginTop: 40 }}>
-        <h2>🔥 Активность за последние 7 дней</h2>
-        <div style={{ display: 'flex', gap: 10, marginTop: 20, flexWrap: 'wrap' }}>
+      <div style={{ marginBottom: 40 }}>
+        <h2 style={{ fontSize: 20, fontWeight: 500, color: '#7b8a6b', marginBottom: 20 }}>Активность за 7 дней</h2>
+        <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
           {last7Days.map(date => {
             const count = heatmap[date] || 0;
-            const intensity = count > 0 ? Math.min(count * 30, 255) : 200;
+            const intensity = Math.min(count * 25, 200);
             return (
-              <div key={date} style={{ textAlign: 'center' }}>
+              <div key={date} style={{ textAlign: 'center', flex: 1, minWidth: 50 }}>
                 <div style={{
-                  width: 60,
                   height: 60,
-                  backgroundColor: `rgb(${255 - intensity}, ${255 - intensity/2}, ${255 - intensity})`,
-                  borderRadius: 8,
+                  backgroundColor: `rgb(${220 - intensity}, ${210 - intensity/2}, ${190 - intensity/2})`,
+                  borderRadius: 12,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  fontWeight: 'bold',
-                  fontSize: 18
+                  fontWeight: 500,
+                  fontSize: 18,
+                  color: '#5b7a5a',
+                  marginBottom: 8
                 }}>
                   {count || 0}
                 </div>
-                <div style={{ fontSize: 12, marginTop: 8 }}>
-                  {date.slice(5)}
-                </div>
+                <div style={{ fontSize: 11, color: '#b8c8a8' }}>{date.slice(5)}</div>
               </div>
             );
           })}
         </div>
       </div>
 
-      {/* Список привычек с сериями */}
-      <div style={{ marginTop: 40 }}>
-        <h2>📋 Все привычки</h2>
+      <h2 style={{ fontSize: 20, fontWeight: 500, color: '#7b8a6b', marginBottom: 20 }}>Привычки</h2>
+      <div style={{ display: 'grid', gap: 12 }}>
         {habits.map(habit => (
-          <div key={habit.id} style={{ border: '1px solid #ddd', margin: 10, padding: 15, borderRadius: 8, backgroundColor: '#f9f9f9' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap' }}>
-              <div>
-                <h3 style={{ margin: 0 }}>{habit.title}</h3>
-                <p style={{ margin: '5px 0', color: '#666' }}>{habit.description}</p>
-                <small>Частота: {habit.frequency === 'daily' ? 'Ежедневно' : 'Еженедельно'}</small>
-              </div>
-              <div style={{ textAlign: 'center', padding: '10px 20px', backgroundColor: streaks[habit.id] > 0 ? '#28a745' : '#6c757d', borderRadius: 8, color: 'white' }}>
-                <div style={{ fontSize: 24, fontWeight: 'bold' }}>{streaks[habit.id] || 0}</div>
-                <div style={{ fontSize: 12 }}>дней подряд</div>
-              </div>
+          <div key={habit.id} style={{ background: 'white', padding: 16, borderRadius: 16, border: '1px solid #e8e0d5', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div>
+              <div style={{ fontWeight: 500, color: '#5b7a5a', marginBottom: 4 }}>{habit.title}</div>
+              <small style={{ color: '#b8c8a8' }}>{habit.description}</small>
+            </div>
+            <div style={{ textAlign: 'right' }}>
+              <div style={{ fontSize: 24, fontWeight: 600, color: streaks[habit.id] > 0 ? '#5b7a5a' : '#c4a882' }}>{streaks[habit.id] || 0}</div>
+              <small style={{ color: '#b8c8a8' }}>дней подряд</small>
             </div>
           </div>
         ))}

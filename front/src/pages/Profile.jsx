@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getMe } from '../api/auth';
+import Navbar from '../components/Navbar';
 
 export default function Profile() {
   const [user, setUser] = useState(null);
@@ -14,10 +15,8 @@ export default function Profile() {
   const loadUser = async () => {
     try {
       const res = await getMe();
-      console.log('Данные пользователя:', res.data);
       setUser(res.data);
     } catch (err) {
-      console.error('Ошибка загрузки профиля:', err);
       navigate('/login');
     } finally {
       setLoading(false);
@@ -29,35 +28,25 @@ export default function Profile() {
     window.location.href = '/login';
   };
 
-  if (loading) return <div>Загрузка...</div>;
+  if (loading) return <div style={{ textAlign: 'center', padding: 50, color: '#8b9a7a' }}>Загрузка...</div>;
 
   return (
-    <div style={{ maxWidth: 600, margin: '50px auto', padding: 20 }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h1>Профиль</h1>
-        <button onClick={() => navigate('/')}>← На главную</button>
+    <div style={{ maxWidth: 800, margin: '0 auto', padding: '0 20px' }}>
+      <Navbar />
+      <div style={{ background: 'white', borderRadius: 24, padding: 32, marginTop: 32, border: '1px solid #e8e0d5' }}>
+        <h1 style={{ fontSize: 28, fontWeight: 500, color: '#5b7a5a', marginBottom: 24 }}>Профиль</h1>
+        <div style={{ borderTop: '1px solid #e8e0d5', paddingTop: 20 }}>
+          <p><strong style={{ color: '#8b9a7a' }}>ID:</strong> <span style={{ color: '#5b7a5a' }}>{user.id}</span></p>
+          <p style={{ marginTop: 12 }}><strong style={{ color: '#8b9a7a' }}>Email:</strong> <span style={{ color: '#5b7a5a' }}>{user.email}</span></p>
+          <p style={{ marginTop: 12 }}>
+            <strong style={{ color: '#8b9a7a' }}>Роль:</strong> 
+            <span style={{ color: '#5b7a5a' }}> {user.role === 'superuser' ? 'Администратор' : 'Пользователь'}</span>
+          </p>
+        </div>
+        <button onClick={logout} style={{ marginTop: 32, padding: '12px 24px', background: '#f0e0d8', color: '#c4a882', border: 'none', borderRadius: 16, cursor: 'pointer', fontSize: 14 }}>
+          Выйти из аккаунта
+        </button>
       </div>
-
-      <div style={{ border: '1px solid #ddd', padding: 20, borderRadius: 8, marginTop: 20 }}>
-        <h2>Информация о пользователе</h2>
-        <p><strong>ID:</strong> {user.id}</p>
-        <p><strong>Email:</strong> {user.email}</p>
-        <p><strong>Роль:</strong> {
-          user.role === 'superuser' 
-            ? '👑 Администратор' 
-            : user.role === 'admin' 
-              ? '👑 Администратор'
-              : '👤 Пользователь'
-        }</p>
-        <p><strong>Дата регистрации:</strong> {user.created_at ? new Date(user.created_at).toLocaleDateString() : 'скоро появится'}</p>
-      </div>
-
-      <button 
-        onClick={logout}
-        style={{ marginTop: 20, padding: 10, width: '100%', backgroundColor: '#dc3545', color: 'white', border: 'none', borderRadius: 4 }}
-      >
-        Выйти из аккаунта
-      </button>
     </div>
   );
 }

@@ -75,5 +75,6 @@ func registerRoutes(
 		admin.GET("/users", authHandler.GetAllUsers)
 		admin.POST("/templates", templateHandler.CreateTemplate)
 		admin.DELETE("/templates/:id", templateHandler.DeleteTemplate)
+		admin.PATCH("/templates/:id", templateHandler.UpdateTemplate)
 	}
 }

@@ -14,6 +14,7 @@ type HabitTemplateService interface {
 	GetByID(ctx context.Context, id uint) (*model.HabitTemplate, error)
 	Create(ctx context.Context, template *model.HabitTemplate) error
 	Delete(ctx context.Context, id uint) error
+	Update(ctx context.Context, template *model.HabitTemplate) error
 }
 
 type habitTemplateService struct {
@@ -68,6 +69,28 @@ func (s *habitTemplateService) Create(ctx context.Context, template *model.Habit
 }
 func (s *habitTemplateService) Delete(ctx context.Context, id uint) error {
 	err := s.repo.Delete(ctx, id)
+	if err != nil {
+		return apierrors.ErrNotFound
+	}
+	return nil
+}
+func (s *habitTemplateService) Update(ctx context.Context, template *model.HabitTemplate) error {
+	if template == nil {
+		return apierrors.ErrValidation
+	}
+
+	template.Title = strings.TrimSpace(template.Title)
+	if template.Title == "" {
+		return apierrors.ErrValidation
+	}
+
+	switch template.Frequency {
+	case "daily", "weekly":
+	default:
+		return apierrors.ErrValidation
+	}
+
+	err := s.repo.Update(ctx, template)
 	if err != nil {
 		return apierrors.ErrNotFound
 	}

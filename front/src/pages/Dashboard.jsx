@@ -1,17 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { 
-  getHabits, 
-  createCheckIn, 
-  getTemplates, 
-  useTemplate, 
-  deleteHabit,
-  getTags,
-  addTagToHabit,
-  removeTagFromHabit,
-  getHabitTags
-} from '../api/habits';
+import { getHabits, createCheckIn, getTemplates, useTemplate, deleteHabit, getTags, addTagToHabit, removeTagFromHabit, getHabitTags } from '../api/habits';
 import { getMe } from '../api/auth';
+import Navbar from '../components/Navbar';
 
 export default function Dashboard() {
   const [habits, setHabits] = useState([]);
@@ -21,7 +12,6 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [showTagModal, setShowTagModal] = useState(null);
   const [selectedTagId, setSelectedTagId] = useState('');
-  const [userRole, setUserRole] = useState('');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -36,24 +26,13 @@ export default function Dashboard() {
       setHabits(habitsRes.data);
       setTemplates(templatesRes.data);
       
-      // Загружаем информацию о пользователе для проверки роли
-      try {
-        const userRes = await getMe();
-        setUserRole(userRes.data.role);
-      } catch (err) {
-        console.error('Ошибка загрузки роли пользователя:', err);
-      }
-      
-      // Пробуем загрузить теги (если бекенд их ещё не добавил)
       try {
         const tagsRes = await getTags();
         setTags(tagsRes.data);
-        // Загружаем теги для каждой привычки
         for (const habit of habitsRes.data) {
           loadHabitTags(habit.id);
         }
-      } catch (tagErr) {
-        console.warn('Теги временно недоступны (404):', tagErr);
+      } catch (err) {
         setTags([]);
       }
     } catch (err) {
@@ -68,228 +47,195 @@ export default function Dashboard() {
       const res = await getHabitTags(habitId);
       setHabitTags(prev => ({ ...prev, [habitId]: res.data }));
     } catch (err) {
-      console.error('Ошибка загрузки тегов привычки:', err);
+      console.error('Ошибка загрузки тегов:', err);
     }
   };
 
   const handleCheckIn = async (habitId) => {
     try {
       await createCheckIn(habitId);
-      alert('✅ Отмечено!');
+      alert('Отмечено!');
       loadData();
     } catch (err) {
-      if (err.response?.status === 409) {
-        alert('⚠️ Сегодня уже отмечено');
-      } else {
-        alert('❌ Ошибка');
-      }
+      alert(err.response?.status === 409 ? 'Уже отмечено сегодня' : 'Ошибка');
     }
   };
 
   const handleDelete = async (habitId) => {
     if (window.confirm('Удалить привычку?')) {
-      try {
-        await deleteHabit(habitId);
-        alert('Привычка удалена');
-        loadData();
-      } catch (err) {
-        alert('Ошибка удаления');
-      }
+      await deleteHabit(habitId);
+      loadData();
     }
   };
 
   const handleUseTemplate = async (templateId, templateTitle) => {
-    if (window.confirm(`Добавить привычку "${templateTitle}" из шаблона?`)) {
-      try {
-        await useTemplate(templateId);
-        alert('✅ Привычка добавлена из шаблона!');
-        loadData();
-      } catch (err) {
-        alert('❌ Ошибка добавления шаблона');
-      }
+    if (window.confirm(`Добавить "${templateTitle}"?`)) {
+      await useTemplate(templateId);
+      loadData();
     }
   };
 
   const handleAddTag = async (habitId) => {
     if (!selectedTagId) return;
-    try {
-      await addTagToHabit(habitId, selectedTagId);
-      loadHabitTags(habitId);
-      setShowTagModal(null);
-      setSelectedTagId('');
-    } catch (err) {
-      alert('Ошибка добавления тега');
-    }
+    await addTagToHabit(habitId, selectedTagId);
+    loadHabitTags(habitId);
+    setShowTagModal(null);
+    setSelectedTagId('');
   };
 
   const handleRemoveTag = async (habitId, tagId) => {
-    try {
-      await removeTagFromHabit(habitId, tagId);
-      loadHabitTags(habitId);
-    } catch (err) {
-      alert('Ошибка удаления тега');
-    }
+    await removeTagFromHabit(habitId, tagId);
+    loadHabitTags(habitId);
   };
 
-  const logout = () => {
-    localStorage.removeItem('token');
-    window.location.href = '/login';
-  };
-
-  if (loading) return <div style={{ textAlign: 'center', marginTop: 50 }}>Загрузка...</div>;
+  if (loading) return <div style={{ textAlign: 'center', padding: 50, color: '#6a7a5a' }}>Загрузка...</div>;
 
   return (
-    <div style={{ maxWidth: 800, margin: '0 auto', padding: 20 }}>
-      {/* Верхнее меню с кнопками */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 10, marginBottom: 20 }}>
-        <h1 style={{ margin: 0 }}>Мои привычки</h1>
-        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-          <button 
-            onClick={() => navigate('/stats')}
-            style={{ padding: '8px 16px', cursor: 'pointer', backgroundColor: '#17a2b8', color: 'white', border: 'none', borderRadius: 4 }}
-          >
-            📊 Статистика
-          </button>
-          <button 
-            onClick={() => navigate('/profile')}
-            style={{ padding: '8px 16px', cursor: 'pointer', backgroundColor: '#6c757d', color: 'white', border: 'none', borderRadius: 4 }}
-          >
-            👤 Профиль
-          </button>
-          <button 
-            onClick={() => navigate('/tags')}
-            style={{ padding: '8px 16px', cursor: 'pointer', backgroundColor: '#6c757d', color: 'white', border: 'none', borderRadius: 4 }}
-          >
-            🏷️ Теги
-          </button>
-          {userRole === 'superuser' && (
-            <button 
-              onClick={() => navigate('/admin')}
-              style={{ padding: '8px 16px', cursor: 'pointer', backgroundColor: '#6c757d', color: 'white', border: 'none', borderRadius: 4 }}
-            >
-              👑 Админ
-            </button>
-          )}
-          <button 
-            onClick={logout}
-            style={{ padding: '8px 16px', cursor: 'pointer', backgroundColor: '#dc3545', color: 'white', border: 'none', borderRadius: 4 }}
-          >
-            Выйти
-          </button>
-        </div>
-      </div>
+    <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 20px' }}>
+      <Navbar />
       
-      {/* Кнопка создания привычки */}
-      <button 
-        onClick={() => navigate('/habit/new')}
-        style={{ margin: '20px 0', padding: '10px 20px', cursor: 'pointer', backgroundColor: '#28a745', color: 'white', border: 'none', borderRadius: 4, fontSize: 16 }}
-      >
-        ➕ Создать привычку
-      </button>
+      <div style={{ textAlign: 'center', margin: '32px 0' }}>
+        <h1 style={{ fontSize: 32, fontWeight: 500, color: '#4a6741', marginBottom: 16 }}>
+          Мои привычки
+        </h1>
+        <button 
+          onClick={() => navigate('/habit/new')} 
+          style={{
+            padding: '12px 32px',
+            background: '#d4e2d4',
+            color: '#4a6741',
+            border: 'none',
+            borderRadius: 30,
+            fontSize: 15,
+            fontWeight: 600,
+            cursor: 'pointer'
+          }}
+        >
+          Новая привычка
+        </button>
+      </div>
 
-      {/* Список привычек пользователя */}
-      <h2 style={{ marginBottom: 16 }}>Мои привычки</h2>
-      {habits.length === 0 && (
-        <p style={{ textAlign: 'center', color: '#666', padding: 40 }}>Нет привычек. Создайте первую!</p>
-      )}
-      {habits.map(habit => (
-        <div key={habit.id} style={{ border: '1px solid #e0e0e0', marginBottom: 12, padding: 16, borderRadius: 12, backgroundColor: 'white', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 8 }}>
-            <div style={{ flex: 1 }}>
-              <h3 style={{ margin: 0, fontSize: 18 }}>{habit.title}</h3>
-              <p style={{ margin: '8px 0', color: '#666' }}>{habit.description}</p>
-              <p style={{ margin: 0, fontSize: 12, color: '#999' }}>
-                Частота: {habit.frequency === 'daily' ? 'Ежедневно' : 'Еженедельно'}
-              </p>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))', gap: 20 }}>
+        {habits.map(habit => (
+          <div key={habit.id} className="card" style={{ padding: 20, background: 'white', borderRadius: 20, border: '2px solid #d4c8b8' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: 12 }}>
+              <h3 style={{ fontSize: 18, fontWeight: 600, color: '#4a6741' }}>{habit.title}</h3>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <button onClick={() => navigate(`/habit/edit/${habit.id}`)} style={{
+                  padding: '6px 14px',
+                  background: '#e8e0d5',
+                  border: 'none',
+                  borderRadius: 12,
+                  cursor: 'pointer',
+                  color: '#5a6a4a',
+                  fontSize: 13,
+                  fontWeight: 500
+                }}>Изменить</button>
+                <button onClick={() => handleDelete(habit.id)} style={{
+                  padding: '6px 14px',
+                  background: '#f0e0d8',
+                  border: 'none',
+                  borderRadius: 12,
+                  cursor: 'pointer',
+                  color: '#a87a62',
+                  fontSize: 13,
+                  fontWeight: 500
+                }}>Удалить</button>
+              </div>
             </div>
-            <div style={{ display: 'flex', gap: 8 }}>
-              <button 
-                onClick={() => navigate(`/habit/edit/${habit.id}`)}
-                style={{ padding: '6px 12px', cursor: 'pointer', backgroundColor: '#ffc107', color: '#333', border: 'none', borderRadius: 4 }}
-              >
-                ✏️ Редактировать
-              </button>
-              <button 
-                onClick={() => handleDelete(habit.id)}
-                style={{ padding: '6px 12px', cursor: 'pointer', backgroundColor: '#dc3545', color: 'white', border: 'none', borderRadius: 4 }}
-              >
-                🗑️ Удалить
-              </button>
-            </div>
-          </div>
-          
-          {/* Теги привычки */}
-          {habitTags[habit.id]?.length > 0 && (
-            <div style={{ marginTop: 12 }}>
-              {habitTags[habit.id].map(tag => (
-                <span
-                  key={tag.id}
-                  style={{
-                    backgroundColor: tag.color || '#007bff',
-                    color: 'white',
-                    padding: '4px 12px',
-                    borderRadius: 20,
-                    fontSize: 12,
-                    marginRight: 8,
-                    display: 'inline-block'
-                  }}
-                >
+            <p style={{ color: '#5a6a4a', marginBottom: 12, fontSize: 14, fontWeight: 500 }}>{habit.description}</p>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 16 }}>
+              {habitTags[habit.id]?.map(tag => (
+                <span key={tag.id} style={{ 
+                  backgroundColor: tag.color || '#c4d4c4', 
+                  color: 'white', 
+                  padding: '4px 12px', 
+                  borderRadius: 16, 
+                  fontSize: 12,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 6
+                }}>
                   {tag.name}
-                  <button
-                    onClick={() => handleRemoveTag(habit.id, tag.id)}
-                    style={{
-                      background: 'none',
-                      border: 'none',
-                      color: 'white',
-                      marginLeft: 8,
-                      cursor: 'pointer',
-                      fontSize: 14
-                    }}
-                  >
-                    ×
-                  </button>
+                  <button onClick={() => handleRemoveTag(habit.id, tag.id)} style={{ background: 'none', border: 'none', color: 'white', cursor: 'pointer', fontSize: 14 }}>×</button>
                 </span>
               ))}
             </div>
-          )}
-          
-          <div style={{ marginTop: 12, display: 'flex', gap: 8 }}>
-            <button 
-              onClick={() => handleCheckIn(habit.id)}
-              style={{ padding: '6px 12px', cursor: 'pointer', backgroundColor: '#28a745', color: 'white', border: 'none', borderRadius: 4 }}
-            >
-              ✅ Отметить
-            </button>
-            <button
-              onClick={() => {
-                setSelectedTagId('');
-                setShowTagModal(habit.id);
-              }}
-              style={{ padding: '6px 12px', cursor: 'pointer', backgroundColor: '#17a2b8', color: 'white', border: 'none', borderRadius: 4 }}
-            >
-              🏷️ Добавить тег
-            </button>
+            <div style={{ display: 'flex', gap: 10 }}>
+              <button 
+                onClick={() => handleCheckIn(habit.id)} 
+                style={{ 
+                  flex: 1, 
+                  padding: '10px 0', 
+                  background: '#d4e2d4', 
+                  color: '#4a6741', 
+                  border: 'none', 
+                  borderRadius: 14, 
+                  cursor: 'pointer',
+                  fontSize: 14,
+                  fontWeight: 600
+                }}
+              >
+                Отметить
+              </button>
+              <button 
+                onClick={() => { setSelectedTagId(''); setShowTagModal(habit.id); }} 
+                style={{ 
+                  padding: '10px 20px', 
+                  background: '#e8e0d5', 
+                  color: '#6a7a5a', 
+                  border: 'none', 
+                  borderRadius: 14, 
+                  cursor: 'pointer',
+                  fontSize: 14,
+                  fontWeight: 500
+                }}
+              >
+                Добавить тег
+              </button>
+            </div>
           </div>
-        </div>
-      ))}
+        ))}
+      </div>
 
-      {/* Шаблоны привычек */}
+      {habits.length === 0 && (
+        <div style={{ textAlign: 'center', padding: 60, color: '#a8b898' }}>
+          У вас пока нет привычек. Нажмите «Новая привычка», чтобы начать.
+        </div>
+      )}
+
       {templates.length > 0 && (
         <>
-          <h2 style={{ margin: '24px 0 16px' }}>Шаблоны привычек</h2>
-          <div style={{ display: 'grid', gap: 10 }}>
+          <h2 style={{ margin: '48px 0 20px', fontSize: 24, fontWeight: 500, color: '#4a6741' }}>Шаблоны</h2>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 12 }}>
             {templates.map(template => (
-              <div key={template.id} style={{ border: '1px solid #e0e0e0', padding: 12, borderRadius: 8, backgroundColor: '#f8f9fa' }}>
-                <h3 style={{ margin: 0, fontSize: 16 }}>{template.title}</h3>
-                <p style={{ margin: '4px 0', color: '#666', fontSize: 14 }}>{template.description}</p>
-                <p style={{ margin: '4px 0', fontSize: 12, color: '#999' }}>
-                  Частота: {template.frequency === 'daily' ? 'Каждый день' : 'Каждую неделю'}
-                </p>
+              <div key={template.id} style={{ 
+                padding: 16, 
+                background: 'white', 
+                borderRadius: 16, 
+                display: 'flex', 
+                justifyContent: 'space-between', 
+                alignItems: 'center',
+                border: '2px solid #d4c8b8'
+              }}>
+                <div>
+                  <div style={{ fontWeight: 600, color: '#4a6741', marginBottom: 4 }}>{template.title}</div>
+                  <small style={{ color: '#5a6a4a', fontWeight: 500 }}>{template.description}</small>
+                </div>
                 <button 
-                  onClick={() => handleUseTemplate(template.id, template.title)}
-                  style={{ marginTop: 8, padding: '6px 12px', cursor: 'pointer', backgroundColor: '#28a745', color: 'white', border: 'none', borderRadius: 4 }}
+                  onClick={() => handleUseTemplate(template.id, template.title)} 
+                  style={{ 
+                    padding: '6px 16px', 
+                    background: '#d4e2d4', 
+                    color: '#4a6741', 
+                    border: 'none', 
+                    borderRadius: 20, 
+                    cursor: 'pointer',
+                    fontSize: 13,
+                    fontWeight: 500
+                  }}
                 >
-                  ➕ Добавить из шаблона
+                  Добавить
                 </button>
               </div>
             ))}
@@ -297,45 +243,46 @@ export default function Dashboard() {
         </>
       )}
 
-      {/* Модальное окно добавления тега */}
       {showTagModal && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundColor: 'rgba(0,0,0,0.5)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 1000
+        <div style={{ 
+          position: 'fixed', 
+          top: 0, 
+          left: 0, 
+          right: 0, 
+          bottom: 0, 
+          background: 'rgba(0,0,0,0.3)', 
+          backdropFilter: 'blur(4px)',
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center', 
+          zIndex: 1000 
         }}>
-          <div style={{ backgroundColor: 'white', padding: 24, borderRadius: 12, minWidth: 320 }}>
-            <h3 style={{ margin: '0 0 16px 0' }}>Добавить тег</h3>
+          <div style={{ background: 'white', padding: 28, borderRadius: 24, minWidth: 340, border: '2px solid #d4c8b8' }}>
+            <h3 style={{ marginBottom: 20, color: '#4a6741', fontWeight: 600 }}>Добавить тег</h3>
             <select
-              value={selectedTagId}
-              onChange={(e) => setSelectedTagId(e.target.value)}
-              style={{ width: '100%', padding: 10, marginBottom: 16, borderRadius: 4, border: '1px solid #ddd' }}
-            >
-              <option value="">Выберите тег</option>
-              {tags.map(tag => (
-                <option key={tag.id} value={tag.id}>{tag.name}</option>
-              ))}
-            </select>
-            <div style={{ display: 'flex', gap: 10 }}>
-              <button 
-                onClick={() => handleAddTag(showTagModal)} 
-                style={{ flex: 1, padding: 10, cursor: 'pointer', backgroundColor: '#28a745', color: 'white', border: 'none', borderRadius: 4 }}
-              >
-                Добавить
-              </button>
-              <button 
-                onClick={() => setShowTagModal(null)} 
-                style={{ flex: 1, padding: 10, cursor: 'pointer', backgroundColor: '#6c757d', color: 'white', border: 'none', borderRadius: 4 }}
-              >
-                Отмена
-              </button>
+                value={selectedTagId}
+                onChange={(e) => setSelectedTagId(e.target.value)}
+                style={{
+                    width: '100%',
+                    padding: '14px 16px',
+                    marginBottom: 20,
+                    borderRadius: 14,
+                    border: '2px solid #d4c8b8',
+                    background: 'white',
+                    fontSize: 16,
+                    cursor: 'pointer'
+                }}
+                >
+                <option value="" style={{ padding: 12 }}>📋 Выберите тег</option>
+                {tags.map(tag => (
+                    <option key={tag.id} value={tag.id} style={{ padding: 12 }}>
+                    {tag.name}
+                    </option>
+                ))}
+                </select>
+            <div style={{ display: 'flex', gap: 12 }}>
+              <button onClick={() => handleAddTag(showTagModal)} style={{ flex: 1, padding: 12, background: '#d4e2d4', color: '#4a6741', border: 'none', borderRadius: 14, cursor: 'pointer', fontWeight: 600 }}>Добавить</button>
+              <button onClick={() => setShowTagModal(null)} style={{ flex: 1, padding: 12, background: '#f0e0d8', color: '#a87a62', border: 'none', borderRadius: 14, cursor: 'pointer' }}>Отмена</button>
             </div>
           </div>
         </div>

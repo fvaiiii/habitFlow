@@ -154,3 +154,49 @@ func (h *HabitTemplateHandler) DeleteTemplate(c *gin.Context) {
 
 	c.Status(http.StatusNoContent)
 }
+// UpdateTemplate godoc
+// @Summary Update template
+// @Tags admin
+// @Security BearerAuth
+// @Accept json
+// @Produce json
+// @Param id path int true "template id"
+// @Param request body dto.CreateHabitTemplateRequest true "template data"
+// @Success 200 {object} dto.HabitTemplateResponse
+// @Failure 400 {object} dto.ErrorResponse
+// @Failure 403 {object} dto.ErrorResponse
+// @Router /admin/templates/{id} [patch]
+func (h *HabitTemplateHandler) UpdateTemplate(c *gin.Context) {
+	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: "invalid id"})
+		return
+	}
+
+	var req dto.CreateHabitTemplateRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: "invalid request"})
+		return
+	}
+
+	template := &model.HabitTemplate{
+		ID:          uint(id),
+		Title:       req.Title,
+		Description: req.Description,
+		Frequency:   req.Frequency,
+	}
+
+	err = h.habitTemplateService.Update(c.Request.Context(), template)
+	if err != nil {
+		c.JSON(http.StatusNotFound, dto.ErrorResponse{Error: err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, dto.HabitTemplateResponse{
+		ID:          template.ID,
+		Title:       template.Title,
+		Description: template.Description,
+		Frequency:   template.Frequency,
+		CreatedAt:   template.CreatedAt,
+	})
+}
