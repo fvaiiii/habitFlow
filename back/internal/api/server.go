@@ -26,7 +26,8 @@ func NewServer(pool *pgxpool.Pool, cfg *config.Config) *Server {
 	templateHandler := handler.NewHabitTemplateHandler(templateService)
 
 	habitRepo := repository.NewHabitRepo(pool)
-	habitService := service.NewHabitService(habitRepo, templateRepo)
+	tagRepo := repository.NewTagRepo(pool)
+	habitService := service.NewHabitService(habitRepo, templateRepo, tagRepo)
 	habitHandler := handler.NewHabitHandler(habitService)
 
 	analyticsRepo := repository.NewAnalyticsRepo(pool)

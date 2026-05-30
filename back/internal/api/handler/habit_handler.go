@@ -48,20 +48,13 @@ func (h *HabitHandler) CreateHabit(c *gin.Context) {
 		TemplateID:  req.TemplateID,
 	}
 
-	res, err := h.habitService.CreateHabit(c.Request.Context(), habit)
+	res, err := h.habitService.CreateHabit(c.Request.Context(), habit, req.Tags)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusCreated, dto.HabitResponse{
-		ID:          res.ID,
-		Title:       res.Title,
-		Description: res.Description,
-		Frequency:   res.Frequency,
-		CreatedAt:   res.CreatedAt,
-		UpdatedAt:   res.UpdatedAt,
-	})
+	c.JSON(http.StatusCreated, dto.HabitFromModel(res))
 }
 
 // GetUserHabits godoc
@@ -81,15 +74,8 @@ func (h *HabitHandler) GetUserHabits(c *gin.Context) {
 	}
 
 	resp := make([]dto.HabitResponse, 0, len(habits))
-	for _, habit := range habits {
-		resp = append(resp, dto.HabitResponse{
-			ID:          habit.ID,
-			Title:       habit.Title,
-			Description: habit.Description,
-			Frequency:   habit.Frequency,
-			CreatedAt:   habit.CreatedAt,
-			UpdatedAt:   habit.UpdatedAt,
-		})
+	for i := range habits {
+		resp = append(resp, dto.HabitFromModel(&habits[i]))
 	}
 
 	c.JSON(http.StatusOK, resp)
@@ -120,14 +106,7 @@ func (h *HabitHandler) GetHabit(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, dto.HabitResponse{
-		ID:          habit.ID,
-		Title:       habit.Title,
-		Description: habit.Description,
-		Frequency:   habit.Frequency,
-		CreatedAt:   habit.CreatedAt,
-		UpdatedAt:   habit.UpdatedAt,
-	})
+	c.JSON(http.StatusOK, dto.HabitFromModel(habit))
 }
 
 // UpdateHabit godoc
@@ -165,20 +144,13 @@ func (h *HabitHandler) UpdateHabit(c *gin.Context) {
 		Frequency:   req.Frequency,
 	}
 
-	res, err := h.habitService.UpdateHabit(c.Request.Context(), habit)
+	res, err := h.habitService.UpdateHabit(c.Request.Context(), habit, req.Tags)
 	if err != nil {
 		c.JSON(http.StatusNotFound, dto.ErrorResponse{Error: err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusOK, dto.HabitResponse{
-		ID:          res.ID,
-		Title:       res.Title,
-		Description: res.Description,
-		Frequency:   res.Frequency,
-		CreatedAt:   res.CreatedAt,
-		UpdatedAt:   res.UpdatedAt,
-	})
+	c.JSON(http.StatusOK, dto.HabitFromModel(res))
 }
 
 // DeleteHabit godoc
@@ -239,12 +211,5 @@ func (h *HabitHandler) CreateFromTemplate(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusCreated, dto.HabitResponse{
-		ID:          habit.ID,
-		Title:       habit.Title,
-		Description: habit.Description,
-		Frequency:   habit.Frequency,
-		CreatedAt:   habit.CreatedAt,
-		UpdatedAt:   habit.UpdatedAt,
-	})
+	c.JSON(http.StatusCreated, dto.HabitFromModel(habit))
 }

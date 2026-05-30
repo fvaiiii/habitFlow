@@ -1,5 +1,4 @@
 .env
-redis_data/
 postgres_data/
 bin/
 *.out
