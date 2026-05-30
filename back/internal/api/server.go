@@ -2,6 +2,7 @@ package api
 
 import (
 	"github.com/fvaiiii/habitFlow/back/internal/api/handler"
+	"github.com/fvaiiii/habitFlow/back/internal/api/middleware"
 	"github.com/fvaiiii/habitFlow/back/internal/config"
 	"github.com/fvaiiii/habitFlow/back/internal/repository"
 	"github.com/fvaiiii/habitFlow/back/internal/seed"
@@ -18,6 +19,7 @@ func NewServer(pool *pgxpool.Pool, cfg *config.Config) *Server {
 
 	r := gin.Default()
 	_ = r.SetTrustedProxies(nil)
+	r.Use(middleware.CORSMiddleware())
 
 	seed.Seed(pool)
 
