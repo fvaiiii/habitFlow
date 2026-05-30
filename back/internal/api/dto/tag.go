@@ -2,6 +2,16 @@ package dto
 
 import "github.com/fvaiiii/habitFlow/back/internal/model"
 
+type CreateTagRequest struct {
+	Name  string `json:"name"`
+	Color string `json:"color,omitempty"`
+}
+
+type UpdateTagRequest struct {
+	Name  string `json:"name"`
+	Color string `json:"color,omitempty"`
+}
+
 type TagResponse struct {
 	ID    uint   `json:"id"`
 	Name  string `json:"name"`
