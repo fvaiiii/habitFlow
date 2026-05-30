@@ -14,6 +14,7 @@ export default function Profile() {
   const loadUser = async () => {
     try {
       const res = await getMe();
+      console.log('Данные пользователя:', res.data);
       setUser(res.data);
     } catch (err) {
       console.error('Ошибка загрузки профиля:', err);
@@ -25,7 +26,7 @@ export default function Profile() {
 
   const logout = () => {
     localStorage.removeItem('token');
-    navigate('/login');
+    window.location.href = '/login';
   };
 
   if (loading) return <div>Загрузка...</div>;
@@ -41,7 +42,14 @@ export default function Profile() {
         <h2>Информация о пользователе</h2>
         <p><strong>ID:</strong> {user.id}</p>
         <p><strong>Email:</strong> {user.email}</p>
-        <p><strong>Роль:</strong> {user.role === 'superuser' ? '👑 Администратор' : '👤 Пользователь'}</p>
+        <p><strong>Роль:</strong> {
+          user.role === 'superuser' 
+            ? '👑 Администратор' 
+            : user.role === 'admin' 
+              ? '👑 Администратор'
+              : '👤 Пользователь'
+        }</p>
+        <p><strong>Дата регистрации:</strong> {user.created_at ? new Date(user.created_at).toLocaleDateString() : 'скоро появится'}</p>
       </div>
 
       <button 

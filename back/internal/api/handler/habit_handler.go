@@ -213,3 +213,87 @@ func (h *HabitHandler) CreateFromTemplate(c *gin.Context) {
 
 	c.JSON(http.StatusCreated, dto.HabitFromModel(habit))
 }
+// GetHabitTags godoc
+// @Summary Get habit tags
+// @Tags habits
+// @Security BearerAuth
+// @Produce json
+// @Param id path int true "habit id"
+// @Success 200 {array} dto.TagResponse
+// @Router /habits/{id}/tags [get]
+func (h *HabitHandler) GetHabitTags(c *gin.Context) {
+	habitID, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: "invalid habit id"})
+		return
+	}
+	userID := c.GetUint("userID")
+
+	tags, err := h.habitService.GetHabitTags(c.Request.Context(), uint(habitID), userID)
+	if err != nil {
+		c.JSON(http.StatusNotFound, dto.ErrorResponse{Error: err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, dto.TagsFromModels(tags))
+}
+
+// AddTagToHabit godoc
+// @Summary Add tag to habit
+// @Tags habits
+// @Security BearerAuth
+// @Param id path int true "habit id"
+// @Param tag_id path int true "tag id"
+// @Success 204
+// @Failure 404 {object} dto.ErrorResponse
+// @Router /habits/{id}/tags/{tag_id} [post]
+func (h *HabitHandler) AddTagToHabit(c *gin.Context) {
+	habitID, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: "invalid habit id"})
+		return
+	}
+	tagID, err := strconv.ParseUint(c.Param("tag_id"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: "invalid tag id"})
+		return
+	}
+	userID := c.GetUint("userID")
+
+	if err := h.habitService.AddTagToHabit(c.Request.Context(), uint(habitID), uint(tagID), userID); err != nil {
+		c.JSON(http.StatusNotFound, dto.ErrorResponse{Error: err.Error()})
+		return
+	}
+
+	c.Status(http.StatusNoContent)
+}
+
+// RemoveTagFromHabit godoc
+// @Summary Remove tag from habit
+// @Tags habits
+// @Security BearerAuth
+// @Param id path int true "habit id"
+// @Param tag_id path int true "tag id"
+// @Success 204
+// @Failure 404 {object} dto.ErrorResponse
+// @Router /habits/{id}/tags/{tag_id} [delete]
+func (h *HabitHandler) RemoveTagFromHabit(c *gin.Context) {
+	habitID, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: "invalid habit id"})
+		return
+	}
+	tagID, err := strconv.ParseUint(c.Param("tag_id"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: "invalid tag id"})
+		return
+	}
+	userID := c.GetUint("userID")
+
+	if err := h.habitService.RemoveTagFromHabit(c.Request.Context(), uint(habitID), uint(tagID), userID); err != nil {
+		c.JSON(http.StatusNotFound, dto.ErrorResponse{Error: err.Error()})
+		return
+	}
+
+	c.Status(http.StatusNoContent)
+}

@@ -64,6 +64,9 @@ func registerRoutes(
 			tags.PATCH("/:id", tagHandler.UpdateTag)
 			tags.DELETE("/:id", tagHandler.DeleteTag)
 		}
+		protected.GET("/habits/:id/tags", habitHandler.GetHabitTags)
+		protected.POST("/habits/:id/tags/:tag_id", habitHandler.AddTagToHabit)
+		protected.DELETE("/habits/:id/tags/:tag_id", habitHandler.RemoveTagFromHabit)
 	}
 
 	admin := protected.Group("/admin")

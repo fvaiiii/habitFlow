@@ -16,6 +16,9 @@ type HabitService interface {
 	UpdateHabit(ctx context.Context, habit *model.Habit, tagNames []string) (*model.Habit, error)
 	DeleteHabit(ctx context.Context, habitId, userId uint) error
 	CreateFromTemplate(ctx context.Context, templateID uint, userID uint) (*model.Habit, error)
+	GetHabitTags(ctx context.Context, habitID uint, userID uint) ([]model.Tag, error)
+    AddTagToHabit(ctx context.Context, habitID uint, tagID uint, userID uint) error
+    RemoveTagFromHabit(ctx context.Context, habitID uint, tagID uint, userID uint) error
 }
 
 type habitService struct {
@@ -25,15 +28,15 @@ type habitService struct {
 }
 
 func NewHabitService(
-	habitRepo repository.HabitRepository,
-	templateRepo repository.HabitTemplateRepository,
-	tagRepo repository.TagRepository,
+    habitRepo repository.HabitRepository, 
+    templateRepo repository.HabitTemplateRepository,
+    tagRepo repository.TagRepository,  // ← должен быть
 ) HabitService {
-	return &habitService{
-		habitRepo:    habitRepo,
-		templateRepo: templateRepo,
-		tagRepo:      tagRepo,
-	}
+    return &habitService{
+        habitRepo:    habitRepo,
+        templateRepo: templateRepo,
+        tagRepo:      tagRepo,  // ← сохранить
+    }
 }
 
 func (s *habitService) CreateHabit(ctx context.Context, habit *model.Habit, tagNames []string) (*model.Habit, error) {
@@ -209,4 +212,58 @@ func normalizeTagNames(tagNames []string) []string {
 	}
 
 	return result
+}
+func (s *habitService) GetHabitTags(ctx context.Context, habitID uint, userID uint) ([]model.Tag, error) {
+    tagsMap, err := s.tagRepo.GetByHabitIDs(ctx, []uint{habitID})
+    if err != nil {
+        return nil, err
+    }
+    return tagsMap[habitID], nil
+}
+
+func (s *habitService) AddTagToHabit(ctx context.Context, habitID uint, tagID uint, userID uint) error {
+    // Получаем текущие теги привычки
+    currentTags, err := s.GetHabitTags(ctx, habitID, userID)
+    if err != nil {
+        return err
+    }
+    
+    // Собираем ID существующих тегов
+    tagIDs := make([]uint, len(currentTags))
+    for i, tag := range currentTags {
+        tagIDs[i] = tag.ID
+    }
+    
+    // Проверяем, нет ли уже такого тега
+    for _, id := range tagIDs {
+        if id == tagID {
+            return nil // уже есть
+        }
+    }
+    
+    // Добавляем новый тег
+    tagIDs = append(tagIDs, tagID)
+    
+    // Сохраняем все теги
+    return s.tagRepo.SetHabitTags(ctx, habitID, tagIDs)
+}
+
+
+func (s *habitService) RemoveTagFromHabit(ctx context.Context, habitID uint, tagID uint, userID uint) error {
+    // Получаем текущие теги привычки
+    currentTags, err := s.GetHabitTags(ctx, habitID, userID)
+    if err != nil {
+        return err
+    }
+    
+    // Собираем ID существующих тегов, исключая удаляемый
+    tagIDs := make([]uint, 0)
+    for _, tag := range currentTags {
+        if tag.ID != tagID {
+            tagIDs = append(tagIDs, tag.ID)
+        }
+    }
+    
+    // Сохраняем оставшиеся теги
+    return s.tagRepo.SetHabitTags(ctx, habitID, tagIDs)
 }

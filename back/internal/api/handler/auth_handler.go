@@ -120,6 +120,7 @@ func (h *AuthHandler) Me(c *gin.Context) {
 	c.JSON(http.StatusOK, dto.UserResponse{
 		ID:    user.ID,
 		Email: user.Email,
+		Role:  user.Role, 
 	})
 }
 
