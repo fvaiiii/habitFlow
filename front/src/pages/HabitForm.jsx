@@ -17,12 +17,24 @@ export default function HabitForm() {
     setLoading(true);
     setError('');
     setSuccess('');
-
+  
+    const data = { title, description, frequency };
+    console.log('📤 Отправка данных:', data);
+  
     try {
-      await createHabit({ title, description, frequency });
+      const response = await createHabit(data);
+      console.log('✅ Ответ сервера (успех):', response);
+      console.log('✅ Созданная привычка:', response.data);
       setSuccess('Привычка успешно создана!');
       setTimeout(() => navigate('/'), 1500);
     } catch (err) {
+      console.error('❌ Ошибка при создании:', err);
+      if (err.response) {
+        console.error('❌ Статус ошибки:', err.response.status);
+        console.error('❌ Данные ошибки:', err.response.data);
+      } else {
+        console.error('❌ Ошибка без ответа:', err.message);
+      }
       setError('Ошибка создания привычки');
       setLoading(false);
     }
