@@ -1,0 +1,32 @@
+name: Go Backend CI
+
+on:
+  push:
+    branches: [ "main", "dev", "dev-*" ]
+  pull_request:
+    branches: [ "main", "dev" ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Скачиваем код репозитория
+      uses: actions/checkout@v4
+
+    - name: Устанавливаем Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: '1.26.2'
+
+    - name: Загружаем зависимости
+      working-directory: ./back
+      run: go mod download
+
+    - name: Проверяем, что код компилируется (Build)
+      working-directory: ./back
+      run: go build -v ./...
+
+    - name: Запускаем тесты (Test)
+      working-directory: ./back
+      run: go test -v ./...

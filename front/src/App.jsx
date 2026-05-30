@@ -5,6 +5,8 @@ import Dashboard from './pages/Dashboard';
 import HabitForm from './pages/HabitForm';
 import HabitEdit from './pages/HabitEdit';
 import Stats from './pages/Stats';
+import Profile from './pages/Profile';
+// import Tags from './pages/Tags';  // Временно закомментировано
 
 function App() {
   return (
@@ -15,6 +17,8 @@ function App() {
       <Route path="/habit/new" element={<HabitForm />} />
       <Route path="/habit/edit/:id" element={<HabitEdit />} />
       <Route path="/stats" element={<Stats />} />
+      <Route path="/profile" element={<Profile />} />
+      {/* <Route path="/tags" element={<Tags />} />  Временно закомментировано */}
     </Routes>
   );
 }
