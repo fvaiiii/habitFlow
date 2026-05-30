@@ -2,6 +2,9 @@ import { Routes, Route } from 'react-router-dom';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
+import HabitForm from './pages/HabitForm';
+import HabitEdit from './pages/HabitEdit';
+import Stats from './pages/Stats';
 
 function App() {
   return (
@@ -9,6 +12,9 @@ function App() {
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route path="/" element={<Dashboard />} />
+      <Route path="/habit/new" element={<HabitForm />} />
+      <Route path="/habit/edit/:id" element={<HabitEdit />} />
+      <Route path="/stats" element={<Stats />} />
     </Routes>
   );
 }
