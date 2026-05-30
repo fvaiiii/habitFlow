@@ -29,6 +29,8 @@ func NewServer(pool *pgxpool.Pool, cfg *config.Config) *Server {
 
 	habitRepo := repository.NewHabitRepo(pool)
 	tagRepo := repository.NewTagRepo(pool)
+	tagService := service.NewTagService(tagRepo)
+	tagHandler := handler.NewTagHandler(tagService)
 	habitService := service.NewHabitService(habitRepo, templateRepo, tagRepo)
 	habitHandler := handler.NewHabitHandler(habitService)
 
@@ -51,6 +53,7 @@ func NewServer(pool *pgxpool.Pool, cfg *config.Config) *Server {
 		checkInHandler,
 		analyticsHandler,
 		templateHandler,
+		tagHandler,
 	)
 
 	return &Server{router: r}
