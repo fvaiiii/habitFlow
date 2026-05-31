@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import { getTemplates, createTemplate, updateTemplate, deleteTemplate, getAllUsers } from '../api/habits';
 import { getMe } from '../api/auth';
 import Navbar from '../components/Navbar';
@@ -11,8 +12,6 @@ export default function AdminTemplates() {
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState(null);
   const [formData, setFormData] = useState({ title: '', description: '', frequency: 'daily' });
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
   const [activeTab, setActiveTab] = useState('templates');
   const navigate = useNavigate();
   const formRef = useRef(null);
@@ -68,15 +67,14 @@ export default function AdminTemplates() {
   const handleCreate = async (e) => {
     e.preventDefault();
     if (!formData.title.trim()) return;
+    
     try {
       await createTemplate(formData);
       setFormData({ title: '', description: '', frequency: 'daily' });
-      setSuccess('Шаблон создан!');
-      setTimeout(() => setSuccess(''), 3000);
+      toast.success('✨ Шаблон создан!');
       loadData();
     } catch (err) {
-      setError('Ошибка создания шаблона');
-      setTimeout(() => setError(''), 3000);
+      toast.error('❌ Ошибка создания шаблона');
     }
   };
 
@@ -85,12 +83,10 @@ export default function AdminTemplates() {
       await updateTemplate(id, formData);
       setEditingId(null);
       setFormData({ title: '', description: '', frequency: 'daily' });
-      setSuccess('Шаблон обновлён!');
-      setTimeout(() => setSuccess(''), 3000);
+      toast.success('✏️ Шаблон обновлён!');
       loadData();
     } catch (err) {
-      setError('Ошибка обновления');
-      setTimeout(() => setError(''), 3000);
+      toast.error('❌ Ошибка обновления');
     }
   };
 
@@ -98,11 +94,10 @@ export default function AdminTemplates() {
     if (window.confirm('Удалить шаблон?')) {
       try {
         await deleteTemplate(id);
-        setSuccess('Шаблон удалён!');
-        setTimeout(() => setSuccess(''), 3000);
+        toast.success('🗑️ Шаблон удалён!');
         loadData();
       } catch (err) {
-        alert('Ошибка удаления');
+        toast.error('❌ Ошибка удаления');
       }
     }
   };
@@ -114,16 +109,12 @@ export default function AdminTemplates() {
       description: template.description || '',
       frequency: template.frequency,
     });
-    setError('');
-    setSuccess('');
     scrollToForm();
   };
 
   const cancelEdit = () => {
     setEditingId(null);
     setFormData({ title: '', description: '', frequency: 'daily' });
-    setError('');
-    setSuccess('');
   };
 
   if (loading) return <div style={{ textAlign: 'center', padding: 50, color: '#6a7a5a' }}>Загрузка...</div>;
@@ -141,9 +132,6 @@ export default function AdminTemplates() {
         <button onClick={() => setActiveTab('users')} style={{ padding: '10px 24px', background: activeTab === 'users' ? '#d4e2d4' : 'transparent', color: activeTab === 'users' ? '#4a6741' : '#8a9a7a', border: 'none', borderRadius: 12, cursor: 'pointer', fontSize: 15, fontWeight: activeTab === 'users' ? 600 : 500 }}>Пользователи</button>
       </div>
 
-      {error && <div style={{ background: '#f0e0d8', color: '#a87a62', padding: 14, borderRadius: 12, marginBottom: 20, textAlign: 'center' }}>{error}</div>}
-      {success && <div style={{ background: '#d4e2d4', color: '#4a6741', padding: 14, borderRadius: 12, marginBottom: 20, textAlign: 'center' }}>{success}</div>}
-
       {activeTab === 'templates' && (
         <>
           <div ref={formRef} style={{ background: 'white', padding: 24, borderRadius: 20, border: '2px solid #d4c8b8', marginBottom: 32, transition: 'box-shadow 0.3s' }}>
@@ -159,14 +147,10 @@ export default function AdminTemplates() {
               </div>
               <div style={{ marginBottom: 20 }}>
                 <label style={{ display: 'block', marginBottom: 8, color: '#6a7a5a', fontWeight: 500 }}>Частота</label>
-                <select
-  value={formData.frequency}
-  onChange={(e) => setFormData({ ...formData, frequency: e.target.value })}
-  style={{ width: '100%', padding: '14px 16px', fontSize: 16, borderRadius: 14, border: '2px solid #d4c8b8', background: 'white', cursor: 'pointer' }}
->
-  <option value="daily">Ежедневно</option>
-  <option value="weekly">Еженедельно</option>
-</select>
+                <select value={formData.frequency} onChange={(e) => setFormData({ ...formData, frequency: e.target.value })} style={{ width: '100%', padding: '12px', borderRadius: 12, border: '2px solid #d4c8b8' }}>
+                  <option value="daily">Ежедневно</option>
+                  <option value="weekly">Еженедельно</option>
+                </select>
               </div>
               <div style={{ display: 'flex', gap: 12 }}>
                 <button type="submit" style={{ padding: '10px 24px', background: '#d4e2d4', color: '#4a6741', border: 'none', borderRadius: 30, fontWeight: 600, cursor: 'pointer' }}>{editingId ? 'Сохранить' : 'Создать'}</button>
