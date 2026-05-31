@@ -83,22 +83,26 @@ func (r *checkInRepo) GetByHabitID(ctx context.Context, habitId uint) ([]model.C
 }
 
 func (r *checkInRepo) GetByHabitIDAndDate(ctx context.Context, habitID uint, date time.Time) (*model.CheckIn, error) {
-	query := `
-		SELECT id, habit_id, completed_at 
-		FROM check_ins
-		WHERE habit_id = $1 and DATE(completed_at) = DATE($2)
-	`
-	var checkIn model.CheckIn
-	err := r.pool.QueryRow(ctx, query, habitID, date).Scan(
-		&checkIn.ID,
-		&checkIn.HabitID,
-		&checkIn.CompletedAt,
-	)
-	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, nil
-		}
-		return nil, fmt.Errorf("get check in by habit id: %w", err)
-	}
-	return &checkIn, nil
+    // Приводим дату к началу дня в UTC
+    startOfDay := time.Date(date.Year(), date.Month(), date.Day(), 0, 0, 0, 0, time.UTC)
+    endOfDay := startOfDay.Add(24 * time.Hour)
+
+    query := `
+        SELECT id, habit_id, completed_at 
+        FROM check_ins
+        WHERE habit_id = $1 AND completed_at >= $2 AND completed_at < $3
+    `
+    var checkIn model.CheckIn
+    err := r.pool.QueryRow(ctx, query, habitID, startOfDay, endOfDay).Scan(
+        &checkIn.ID,
+        &checkIn.HabitID,
+        &checkIn.CompletedAt,
+    )
+    if err != nil {
+        if errors.Is(err, pgx.ErrNoRows) {
+            return nil, nil
+        }
+        return nil, fmt.Errorf("get check in by habit id and date: %w", err)
+    }
+    return &checkIn, nil
 }

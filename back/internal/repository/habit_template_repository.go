@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/fvaiiii/habitFlow/back/internal/model"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -12,6 +13,7 @@ type HabitTemplateRepository interface {
 	GetByID(ctx context.Context, id uint) (*model.HabitTemplate, error)
 	Create(ctx context.Context, template *model.HabitTemplate) error
 	Delete(ctx context.Context, id uint) error
+	Update(ctx context.Context, template *model.HabitTemplate) error
 }
 
 type habitTemplateRepo struct {
@@ -109,4 +111,19 @@ func (r *habitTemplateRepo) Delete(ctx context.Context, id uint) error {
 	_, err := r.pool.Query(ctx, query, id)
 
 	return err
+}
+func (r *habitTemplateRepo) Update(ctx context.Context, template *model.HabitTemplate) error {
+	query := `
+		UPDATE habit_templates
+		SET title = $2, description = $3, frequency = $4
+		WHERE id = $1
+	`
+	result, err := r.pool.Exec(ctx, query, template.ID, template.Title, template.Description, template.Frequency)
+	if err != nil {
+		return fmt.Errorf("update template: %w", err)
+	}
+	if result.RowsAffected() == 0 {
+		return ErrNotFound
+	}
+	return nil
 }

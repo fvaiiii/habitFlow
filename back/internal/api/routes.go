@@ -16,6 +16,7 @@ func registerRoutes(
 	checkInHandler *handler.CheckInHandler,
 	analyticsHandler *handler.AnalyticsHandler,
 	templateHandler *handler.HabitTemplateHandler,
+	tagHandler *handler.TagHandler,
 ) {
 
 	r.GET("/health", func(c *gin.Context) {
@@ -55,6 +56,17 @@ func registerRoutes(
 		{
 			stats.GET("/heatmap", analyticsHandler.GetHeatmap)
 		}
+
+		tags := protected.Group("/tags")
+		{
+			tags.GET("", tagHandler.GetTags)
+			tags.POST("", tagHandler.CreateTag)
+			tags.PATCH("/:id", tagHandler.UpdateTag)
+			tags.DELETE("/:id", tagHandler.DeleteTag)
+		}
+		protected.GET("/habits/:id/tags", habitHandler.GetHabitTags)
+		protected.POST("/habits/:id/tags/:tag_id", habitHandler.AddTagToHabit)
+		protected.DELETE("/habits/:id/tags/:tag_id", habitHandler.RemoveTagFromHabit)
 	}
 
 	admin := protected.Group("/admin")
@@ -63,5 +75,6 @@ func registerRoutes(
 		admin.GET("/users", authHandler.GetAllUsers)
 		admin.POST("/templates", templateHandler.CreateTemplate)
 		admin.DELETE("/templates/:id", templateHandler.DeleteTemplate)
+		admin.PATCH("/templates/:id", templateHandler.UpdateTemplate)
 	}
 }

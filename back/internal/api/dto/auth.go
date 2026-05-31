@@ -8,6 +8,7 @@ type AuthRequest struct {
 type UserResponse struct {
 	ID    uint   `json:"id"`
 	Email string `json:"email"`
+	Role  string `json:"role"`
 }
 
 type UserAdminResponse struct {
