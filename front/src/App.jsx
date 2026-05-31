@@ -8,19 +8,20 @@ import Stats from './pages/Stats';
 import Profile from './pages/Profile';
 import Tags from './pages/Tags';
 import AdminTemplates from './pages/AdminTemplates';
+import PrivateRoute from './components/PrivateRoute';
 
 function App() {
   return (
     <Routes>
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
-      <Route path="/" element={<Dashboard />} />
-      <Route path="/habit/new" element={<HabitForm />} />
-      <Route path="/habit/edit/:id" element={<HabitEdit />} />
-      <Route path="/stats" element={<Stats />} />
-      <Route path="/profile" element={<Profile />} />
-      <Route path="/tags" element={<Tags />} />
-      <Route path="/admin" element={<AdminTemplates />} />
+      <Route path="/" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
+      <Route path="/habit/new" element={<PrivateRoute><HabitForm /></PrivateRoute>} />
+      <Route path="/habit/edit/:id" element={<PrivateRoute><HabitEdit /></PrivateRoute>} />
+      <Route path="/stats" element={<PrivateRoute><Stats /></PrivateRoute>} />
+      <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
+      <Route path="/tags" element={<PrivateRoute><Tags /></PrivateRoute>} />
+      <Route path="/admin" element={<PrivateRoute><AdminTemplates /></PrivateRoute>} />
     </Routes>
   );
 }
