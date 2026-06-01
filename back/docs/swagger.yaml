@@ -1,0 +1,527 @@
+definitions:
+  dto.AuthRequest:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    type: object
+  dto.CheckInResponse:
+    properties:
+      completed_at:
+        type: string
+      habit_id:
+        type: integer
+      id:
+        type: integer
+    type: object
+  dto.CreateHabitRequest:
+    properties:
+      description:
+        type: string
+      frequency:
+        type: string
+      template_id:
+        type: integer
+      title:
+        type: string
+    type: object
+  dto.CreateHabitTemplateRequest:
+    properties:
+      description:
+        type: string
+      frequency:
+        type: string
+      title:
+        type: string
+    type: object
+  dto.ErrorResponse:
+    properties:
+      error:
+        type: string
+    type: object
+  dto.HabitResponse:
+    properties:
+      created_at:
+        type: string
+      description:
+        type: string
+      frequency:
+        type: string
+      id:
+        type: integer
+      title:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  dto.HabitTemplateResponse:
+    properties:
+      created_at:
+        type: string
+      description:
+        type: string
+      frequency:
+        type: string
+      id:
+        type: integer
+      title:
+        type: string
+    type: object
+  dto.HeatmapResponse:
+    properties:
+      data:
+        additionalProperties:
+          type: integer
+        type: object
+    type: object
+  dto.MessageResponse:
+    properties:
+      message:
+        type: string
+    type: object
+  dto.StreakResponse:
+    properties:
+      streak:
+        type: integer
+    type: object
+  dto.TokenResponse:
+    properties:
+      token:
+        type: string
+    type: object
+  dto.UpdateHabitRequest:
+    properties:
+      description:
+        type: string
+      frequency:
+        type: string
+      title:
+        type: string
+    type: object
+  dto.UserAdminResponse:
+    properties:
+      email:
+        type: string
+      id:
+        type: integer
+      role:
+        type: string
+    type: object
+  dto.UserResponse:
+    properties:
+      email:
+        type: string
+      id:
+        type: integer
+    type: object
+info:
+  contact: {}
+paths:
+  /admin/templates:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: template data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateHabitTemplateRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/dto.HabitTemplateResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Create template
+      tags:
+      - admin
+  /admin/templates/{id}:
+    delete:
+      parameters:
+      - description: template id
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "204":
+          description: No Content
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Delete template
+      tags:
+      - admin
+  /admin/users:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/dto.UserAdminResponse'
+            type: array
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get all users
+      tags:
+      - admin
+  /habits:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/dto.HabitResponse'
+            type: array
+      security:
+      - BearerAuth: []
+      summary: Get user habits
+      tags:
+      - habits
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: habit data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateHabitRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/dto.HabitResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Create habit
+      tags:
+      - habits
+  /habits/{id}:
+    delete:
+      parameters:
+      - description: habit id
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "204":
+          description: No Content
+      security:
+      - BearerAuth: []
+      summary: Delete habit
+      tags:
+      - habits
+    get:
+      parameters:
+      - description: habit id
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.HabitResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get habit by id
+      tags:
+      - habits
+    patch:
+      consumes:
+      - application/json
+      parameters:
+      - description: habit id
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: update data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateHabitRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.HabitResponse'
+      security:
+      - BearerAuth: []
+      summary: Update habit
+      tags:
+      - habits
+  /habits/{id}/check-ins:
+    get:
+      parameters:
+      - description: habit id
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/dto.CheckInResponse'
+            type: array
+      security:
+      - BearerAuth: []
+      summary: Get check-ins for habit
+      tags:
+      - check-ins
+    post:
+      parameters:
+      - description: habit id
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/dto.CheckInResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Create check-in for habit
+      tags:
+      - check-ins
+  /habits/{id}/streak:
+    get:
+      parameters:
+      - description: habit id
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.StreakResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get habit streak
+      tags:
+      - analytics
+  /login:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: email/password
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.AuthRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.TokenResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      summary: Login user
+      tags:
+      - auth
+  /me:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.UserResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get current user
+      tags:
+      - auth
+  /register:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: email/password
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.AuthRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/dto.MessageResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      summary: Register user
+      tags:
+      - auth
+  /stats/heatmap:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.HeatmapResponse'
+      security:
+      - BearerAuth: []
+      summary: Get heatmap for user
+      tags:
+      - analytics
+  /templates:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/dto.HabitTemplateResponse'
+            type: array
+      summary: Get all habit templates
+      tags:
+      - templates
+  /templates/{id}:
+    get:
+      parameters:
+      - description: template id
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.HabitTemplateResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      summary: Get template by id
+      tags:
+      - templates
+  /templates/{id}/use:
+    post:
+      parameters:
+      - description: template id
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/dto.HabitResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Create habit from template
+      tags:
+      - habits
+swagger: "2.0"
