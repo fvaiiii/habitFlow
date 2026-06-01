@@ -11,7 +11,7 @@ type CreateHabitRequest struct {
 	Description string   `json:"description"`
 	Frequency   string   `json:"frequency"`
 	TemplateID  *uint    `json:"template_id,omitempty"`
-	Tags        []uint `json:"tags,omitempty"`
+	Tags        []string `json:"tags,omitempty"`
 }
 
 type UpdateHabitRequest struct {
